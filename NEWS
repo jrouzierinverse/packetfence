@@ -48,6 +48,7 @@ Enhancements
  * Improved the relevance of exit status in pfcmd_vlan (#1493)
  * LLDP support for Cisco switches
  * New report for the Top 25 Sponsors
+ * Removed 127.0.0.1 switch from the config and added in the code
 
 Bug Fixes
  * Adding radius.log into the logrotate script (#1526)

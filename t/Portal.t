@@ -5,11 +5,7 @@ Portal.t
 
 =head1 DESCRIPTION
 
-<<<<<<< HEAD
-pf::Portal... subsystem testing
-=======
 Tests for our pf::Portal... and friends modules.
->>>>>>> fix/1485-web-guest-vs-admin-separation
 
 =cut
 use strict;
@@ -31,6 +27,15 @@ BEGIN {
 }
 
 use pf::util;
+
+=head1 SETUP
+
+Creating stub portalSession for tests with a mockable CGI component.
+
+=cut
+my $portalSession = pf::Portal::Session->new('testing' => 1);
+my $mocked_cgi = Test::MockObject::Extends->new( CGI->new );
+$portalSession->{'_cgi'} = $mocked_cgi;
 
 =head1 SETUP
 

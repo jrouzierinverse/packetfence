@@ -1259,8 +1259,10 @@ sub service {
         }
         if ( $nb_running_services == 0 ) {
             $logger->info("saving current iptables to var/iptables.bak");
-            require pf::iptables;
-            pf::iptables::iptables_save( $install_dir . '/var/iptables.bak' );
+            require pf::inline::custom;
+            my $iptables = pf::inline::custom->new();
+            my $technique = $iptables->{_technique};
+            $technique->iptables_save( $install_dir . '/var/iptables.bak' );
         }
     }
 
@@ -1271,8 +1273,10 @@ sub service {
         pf::os::import_dhcp_fingerprints();
         pf::services::read_violations_conf();
         print "iptables|$command\n";
-        require pf::iptables;
-        pf::iptables::iptables_generate();
+        require pf::inline::custom;
+        my $iptables = pf::inline::custom->new();
+        my $technique = $iptables->{_technique};
+        $technique->iptables_generate();
     }
 
     foreach my $srv (@services) {
@@ -1294,8 +1298,10 @@ sub service {
             }
         }
         if ( $nb_running_services == 0 ) {
-            require pf::iptables;
-            pf::iptables::iptables_restore( $install_dir . '/var/iptables.bak' );
+            require pf::inline::custom;
+            my $iptables = pf::inline::custom->new();
+            my $technique = $iptables->{_technique};
+            $technique->iptables_restore( $install_dir . '/var/iptables.bak' );
         } else {
             if ( lc($service) eq 'pf' ) {
                 $logger->error(

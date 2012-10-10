@@ -24,6 +24,7 @@ Documentation
 
 Enhancements
  * Code cleanups (#1380, #1484)
+ * Code cleanups (#1484, #1485)
  * Important simplification of the Captive Portal code to make it harder to introduce problems
  * Adding default OCSP/CRL Proxies (#1329)
  * Better WISPR support
@@ -84,6 +85,7 @@ Bug Fixes
 Translations
  * Updated Spanish (es) translation (Thanks to Dominique Couot)
  * Updated French (fr) translation (Thanks to Dominique Couot)
+ * Guest management login and authentication regressions (#1518)
 
 --------------------------------------------------------------------------------
 Version 3.5.0 released on 2012-08-01

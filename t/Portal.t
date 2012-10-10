@@ -5,7 +5,11 @@ Portal.t
 
 =head1 DESCRIPTION
 
+<<<<<<< HEAD
 pf::Portal... subsystem testing
+=======
+Tests for our pf::Portal... and friends modules.
+>>>>>>> fix/1485-web-guest-vs-admin-separation
 
 =cut
 use strict;
@@ -71,7 +75,25 @@ ok(
 );
 
 
-=back
+=item _resolveIp
+
+=cut
+my $remote_ip = '192.168.1.1';
+# emulate the source IP
+$mocked_cgi->mock('remote_addr', sub { return ($remote_ip); });
+is($portalSession->_resolveIp(), $remote_ip, 'fetch a conventional remote IP');
+
+# emulate a loopback source
+$mocked_cgi->mock('remote_addr', sub { return ($pf::Portal::Session::LOOPBACK_IPV4); });
+$ENV{'HTTP_X_FORWARDED_FOR'} = $remote_ip;
+is($portalSession->_resolveIp(), $remote_ip, 'fetch IP through HTTP_X_FORWARDED_FOR for loopback source');
+
+# emulate a virtual IP source
+my $fake_virtual_ip = '10.10.10.100';
+$management_network->tag("vip", $fake_virtual_ip);
+$mocked_cgi->mock('remote_addr', sub { return ($fake_virtual_ip); });
+$ENV{'HTTP_X_FORWARDED_FOR'} = $remote_ip;
+is($portalSession->_resolveIp(), $remote_ip, 'fetch IP through HTTP_X_FORWARDED_FOR for virtual IP source');
 
 =head1 AUTHOR
 

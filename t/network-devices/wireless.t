@@ -43,7 +43,7 @@ foreach my $wireless_object (@wireless_devices) {
 
     # test its interface
     can_ok($wireless_object, qw(
-        parseTrap getVersion extractSsid deauthenticateMac
+        parseTrap getVersion extractSsid deauthenticateMacDefault
     ));
 
     # bogusly calling methods trying to generate warnings
@@ -58,7 +58,7 @@ my $networkdevice_object = pf::SNMP::Cisco::WiSM2->new(
     '-ip' => '127.0.0.1',
 );
 # bogusly calling methods trying to generate warnings
-$networkdevice_object->deauthenticateMac("aa:bb:cc:dd:ee:ff");
+$networkdevice_object->deauthenticateMacDefault("aa:bb:cc:dd:ee:ff");
 
 # regression test for #1437: RADIUS-based Disconnects not working for Aruba, AeroHIVE
 # http://www.packetfence.org/bugs/view.php?id=1437
@@ -76,7 +76,7 @@ $networkdevice_object = pf::SNMP::Aruba->new(
     '-ip' => '127.0.0.1',
 );
 # bogusly calling methods trying to generate warnings
-$networkdevice_object->deauthenticateMac("aa:bb:cc:dd:ee:ff");
+$networkdevice_object->deauthenticateMacDefault("aa:bb:cc:dd:ee:ff");
 # putting back old die handler
 $SIG{__DIE__} = $die_handler;
 

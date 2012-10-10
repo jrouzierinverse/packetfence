@@ -178,6 +178,14 @@ sub supportsLldp {
 =cut
 sub supportsRadiusDynamicVlanAssignment { return $TRUE; }
 
+=item inlineCapabilities
+
+=cut
+
+# inline capabilities
+sub inlineCapabilities { return; }
+
+
 sub new {
     my ( $class, %argv ) = @_;
     my $this = bless {
@@ -191,6 +199,7 @@ sub new {
         '_mode'                     => undef,
         '_normalVlan'               => undef,
         '_registrationVlan'         => undef,
+        '_inlineVlan'               => undef,
         '_sessionRead'              => undef,
         '_sessionWrite'             => undef,
         '_sessionControllerWrite'   => undef,
@@ -230,6 +239,7 @@ sub new {
         '_VoIPEnabled'              => undef,
         '_roles'                    => undef,
         '_deauthMethod'             => undef,
+        '_inlineTrigger'            => undef,
     }, $class;
 
     foreach ( keys %argv ) {
@@ -327,7 +337,12 @@ sub new {
             $this->{_roles} = $argv{$_};
         } elsif (/^-?deauthMethod$/i) {
             $this->{_deauthMethod} = $argv{$_};
+        } elsif (/^-?inlineTrigger$/i) {
+            $this->{_inlineTrigger} = $argv{$_};
+        } elsif (/^-?inlineVlan$/i) {
+            $this->{_inlineVlan} = $argv{$_};
         }
+
     }
     return $this;
 }
@@ -988,9 +1003,9 @@ sub isManagedVlan {
     # can I find $vlan in _vlans ?
     if (grep({$_ == $vlan} @{$this->{_vlans}}) == 0) {
         #unmanaged VLAN
-        return 0;
+        return $FALSE;
     }
-    return 1;
+    return $TRUE;
 }
 
 =item getMode - get the mode

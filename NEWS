@@ -13,10 +13,14 @@ For more details and developer visible changes see the ChangeLog file.
 For a list of compatibility related changes see the UPGRADE file.
 
 --------------------------------------------------------------------------------
-Version <develRelease> released on <releaseDate>
+Version <stableRelease> released on <releaseDate>
 
 New Hardware
+ * Support for Cisco Catalyst 2960G in 802.1X / MAC-Authentication
  * New module for Cisco Catalyst 3750G to fix offset issues
+
+Documentation
+ * Clarify routed VLAN requirements (Patch from Brian Candler)
 
 Enhancements
  * Code cleanups (#1380, #1484)
@@ -26,31 +30,21 @@ Enhancements
  * New parameter to control captive portal interception: secure_redirect
  * Support for Perl 5.12+ (no longer relies on perl-suid, #1438)
  * Minor refactoring in the RADIUS perl modules
-
-Bug Fixes
- * Epic fight with MAC OSX DNS caching while using Inline Mode (#1535)
- * Translation of captive portal error messages
- * Side effect fixes of captive portal rework (#1366)
- * No more domain in our gettext po resources files (#1433)
-
---------------------------------------------------------------------------------
-Version <stableRelease> released on <releaseDate>
-
-New Hardware
- * Support for Cisco Catalyst 2960G in 802.1X / MAC-Authentication
-
-Documentation
- * Clarify routed VLAN requirements (Patch from Brian Candler)
-
-Enhancements
  * Debian packages improvements
  * Cometic fixes to RADIUS configs (radiusd.conf and packetfence-tunnel)
  * Improved the relevance of exit status in pfcmd_vlan (#1493)
  * LLDP support for Cisco switches
  * New report for the Top 25 Sponsors
  * Removed 127.0.0.1 switch from the config and added in the code
+ * IPSET support and multivlan for inline mode
+ * Choice of deauthentification for switches
+ * Support for radius when you are in inline mode
 
 Bug Fixes
+ * Epic fight with MAC OSX DNS caching while using Inline Mode (#1535)
+ * Translation of captive portal error messages
+ * Side effect fixes of captive portal rework (#1366)
+ * No more domain in our gettext po resources files (#1433)
  * Adding radius.log into the logrotate script (#1526)
  * Tweaking some accounting queries for performance (#1534)
  * Regression in pfdhcplistener process management (introduced in 3.5.1, #1545)

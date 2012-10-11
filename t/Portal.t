@@ -28,6 +28,7 @@ BEGIN {
     use_ok('pf::Portal::Session');
 }
 
+use pf::config;
 use pf::util;
 
 =head1 SETUP
@@ -104,7 +105,7 @@ is($portalSession->_resolveIp(), $remote_ip, 'fetch IP through HTTP_X_FORWARDED_
 
 # emulate a virtual IP source
 my $fake_virtual_ip = '10.10.10.100';
-#$management_network->tag("vip", $fake_virtual_ip);
+$management_network->tag("vip", $fake_virtual_ip);
 $mocked_cgi->mock('remote_addr', sub { return ($fake_virtual_ip); });
 $ENV{'HTTP_X_FORWARDED_FOR'} = $remote_ip;
 is($portalSession->_resolveIp(), $remote_ip, 'fetch IP through HTTP_X_FORWARDED_FOR for virtual IP source');

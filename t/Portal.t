@@ -16,6 +16,7 @@ use lib '/usr/local/pf/lib';
 use File::Basename qw(basename);
 use Test::More tests => 10;
 use Test::NoWarnings;
+use Test::MockObject::Extends;
 
 Log::Log4perl->init("log.conf");
 my $logger = Log::Log4perl->get_logger( basename($0) );

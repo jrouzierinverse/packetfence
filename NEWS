@@ -65,6 +65,9 @@ Enhancements
  * Important database performance improvement in VoIP and fingerprint checks
  * Improved pfdhcplistener process surveillance (#1490)
 
+New Features
+ * Integrating with Wireless IDS for Aruba, Motorola, and Ruckus controllers.
+
 Bug Fixes
  * FreeRADIUS watchdog updated for 3.5.0 changes (#1514)
  * debian packages improvements regarding FreeRADIUS configuration

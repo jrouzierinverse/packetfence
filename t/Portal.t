@@ -14,7 +14,7 @@ use warnings;
 use lib '/usr/local/pf/lib';
 
 use File::Basename qw(basename);
-use Test::More tests => 10;
+use Test::More tests => 11;
 use Test::NoWarnings;
 use Test::MockObject::Extends;
 

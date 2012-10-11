@@ -14,7 +14,7 @@ use warnings;
 use lib '/usr/local/pf/lib';
 
 use File::Basename qw(basename);
-use Test::More tests => 4;
+use Test::More tests => 10;
 use Test::NoWarnings;
 
 Log::Log4perl->init("log.conf");
@@ -24,6 +24,7 @@ Log::Log4perl::MDC->put( 'tid',  0 );
 
 BEGIN { 
     use_ok('pf::Portal::ProfileFactory');
+    use_ok('pf::Portal::Session');
 }
 
 use pf::util;
@@ -78,6 +79,13 @@ ok(
     isdisabled($default_profile->{'billing_engine'}),
     'default billing engine should be set and disabled. regression bug 1525'
 );
+
+=item valid type
+
+=cut
+isa_ok($portalSession, "pf::Portal::Session");
+can_ok($portalSession, qw(_resolveIp cgi stash));
+
 
 
 =item _resolveIp

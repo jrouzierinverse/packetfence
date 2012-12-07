@@ -15,7 +15,7 @@ Pre-Depends:  freeradius (>= 2.2.5), freeradius-ldap, freeradius-postgresql,
  freeradius-mysql, freeradius-krb5, dhcp3-server
 Breaks: libdata-alias-perl
 Depends: ${misc:Depends}, vlan, make,
- openssl, openssl-blacklist, openssl-blacklist-extra,
+ openssl, openssl-blacklist, openssl-blacklist-extra, snort | suricata
  mysql-server, memcached,
  snmp, snmptrapfmt, snmp-mibs-downloader, conntrack,
 # apache related

@@ -87,7 +87,7 @@ Requires: chkconfig, coreutils, grep, iproute, openssl, sed, tar, wget, gettext
 # for process management
 Requires: procps
 Requires: libpcap, libxml2, zlib, zlib-devel, glibc-common,
-Requires: httpd, mod_ssl, php, php-gd
+Requires: httpd, mod_ssl
 Requires: mod_perl
 requires: libapreq2
 Requires: dhcp, bind
@@ -96,8 +96,6 @@ Requires: memcached
 %{?el5:Requires: freeradius2 >= 2.1.12, freeradius2-mysql, freeradius2-perl, freeradius2-ldap, freeradius2-utils }
 %{?el6:Requires: freeradius >= 2.1.12, freeradius-mysql, freeradius-perl, freeradius-ldap, freeradius-utils }
 Requires: make
-# php-pear-Log required not php-pear, fixes #804
-Requires: php-pear-Log
 Requires: net-tools
 Requires: net-snmp >= 5.3.2.2
 Requires: mysql, mysql-server, perl(DBD::mysql)
@@ -172,7 +170,6 @@ Requires: perl(Thread::Pool)
 Requires: perl(Date::Parse)
 Requires: perl(UNIVERSAL::require)
 Requires: perl(YAML)
-Requires: php-ldap
 Requires: perl(Try::Tiny)
 Requires: perl(Crypt::GeneratePassword)
 Requires: perl(MIME::Lite::TT)
@@ -339,7 +336,6 @@ cp -r addons/captive-portal/ $RPM_BUILD_ROOT/usr/local/pf/addons/
 cp -r addons/dev-helpers/ $RPM_BUILD_ROOT/usr/local/pf/addons/
 cp -r addons/high-availability/ $RPM_BUILD_ROOT/usr/local/pf/addons/
 cp -r addons/integration-testing/ $RPM_BUILD_ROOT/usr/local/pf/addons/
-cp -r addons/mrtg/ $RPM_BUILD_ROOT/usr/local/pf/addons/
 cp -r addons/packages/ $RPM_BUILD_ROOT/usr/local/pf/addons/
 cp -r addons/snort/ $RPM_BUILD_ROOT/usr/local/pf/addons/
 cp -r addons/soh/ $RPM_BUILD_ROOT/usr/local/pf/addons/
@@ -613,8 +609,6 @@ fi
 %dir                    /usr/local/pf/addons/integration-testing/
                         /usr/local/pf/addons/integration-testing/*
                         /usr/local/pf/addons/logrotate
-%dir                    /usr/local/pf/addons/mrtg
-                        /usr/local/pf/addons/mrtg/*
 %dir                    /usr/local/pf/addons/packages
                         /usr/local/pf/addons/packages/*
 %dir                    /usr/local/pf/addons/snort
@@ -745,7 +739,6 @@ fi
 %dir                    /usr/local/pf/html
 %dir                    /usr/local/pf/html/captive-portal
 %attr(0755, pf, pf)     /usr/local/pf/html/captive-portal/*.cgi
-                        /usr/local/pf/html/captive-portal/*.php
 %config(noreplace)      /usr/local/pf/html/captive-portal/content/responsive.css
 %config(noreplace)      /usr/local/pf/html/captive-portal/content/styles.css
 %config(noreplace)      /usr/local/pf/html/captive-portal/content/print.css
@@ -755,8 +748,6 @@ fi
                         /usr/local/pf/html/captive-portal/content/images/*
 %dir                    /usr/local/pf/html/captive-portal/templates
 %config(noreplace)      /usr/local/pf/html/captive-portal/templates/*
-%dir                    /usr/local/pf/html/captive-portal/violations
-%config(noreplace)      /usr/local/pf/html/captive-portal/violations/*
 %dir                    /usr/local/pf/html/common
                         /usr/local/pf/html/common/*
                         /usr/local/pf/html/pfappserver/

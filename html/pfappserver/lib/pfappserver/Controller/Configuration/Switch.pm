@@ -31,6 +31,7 @@ Setting the current form instance and model
 
 sub begin :Private {
     my ($self, $c) = @_;
+    pf::config::cached::ReloadConfigs();
     my ($status, $switch_default, $roles);
     my $model = $c->model("Config::Cached::Switch")->new;
     ($status, $switch_default) = $model->read('default');
@@ -57,6 +58,8 @@ sub object :Chained('/') :PathPart('configuration/switch') :CaptureArgs(1) {
 
 =head2 after list
 
+Check which switch is also defined as a floating device
+
 =cut
 
 after list => sub {
@@ -76,9 +79,7 @@ after list => sub {
     }
 };
 
-=head2 after update
-
-=head2 after remove
+=head2 after update and remove
 
 =cut
 
@@ -100,7 +101,7 @@ after create => sub {
     }
 };
 
-=after view
+=head2 after view
 
 =cut
 

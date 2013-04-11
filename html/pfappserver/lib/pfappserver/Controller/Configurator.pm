@@ -54,6 +54,7 @@ Set the default view to pfappserver::View::Configurator.
 
 sub begin :Private {
     my ( $self, $c ) = @_;
+    pf::config::cached::ReloadConfigs();
     $c->stash->{current_view} = 'Configurator';
 }
 
@@ -361,8 +362,9 @@ sub configuration :Chained('object') :PathPart('configuration') :Args(0) {
             ($status, $networks) = $network_model->readAll();
             foreach my $network ( @$networks ) {
                 my $type = $network->{type};
-                $network_model->update($network->{id}, {'domain-name' => $type . "." . $general_domain});
+                $network_model->update($network->{network}, {'domain-name' => $type . "." . $general_domain});
             }
+            $network_model->rewriteConfig();
 
         }
         if (is_error($status)) {

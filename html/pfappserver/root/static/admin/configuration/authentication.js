@@ -36,21 +36,27 @@ $(function() { // DOM ready
 
         var btn = $(this);
         var form = btn.closest('form');
+        var valid = isFormValid(form);
+
         resetAlert($('#section'));
-        $.ajax({
-            type: 'POST',
-            url: btn.attr('href'),
-            data: form.serialize()
-        }).done(function(data) {
-            showSuccess(form, data.status_msg);
-        }).fail(function(jqXHR) {
-            var status_msg = getStatusMsg(jqXHR);
-            showPermanentError(form, status_msg);
-        });
+        if (valid) {
+            $.ajax({
+                type: 'POST',
+                url: btn.attr('href'),
+                data: form.serialize()
+            }).done(function(data) {
+                showSuccess(form, data.status_msg);
+            }).fail(function(jqXHR) {
+                var status_msg = getStatusMsg(jqXHR);
+                showPermanentError(form, status_msg);
+            });
+        }
     });
 
     /* Save a source */
     $('#section').on('submit', 'form[name="source"]', function(event) {
+        e.preventDefault(event);
+
         var form = $(this),
         valid = isFormValid(form);
 
@@ -78,8 +84,6 @@ $(function() { // DOM ready
             // TODO: find a way to change the location hash without reloading the page
             // location.hash = 'authentication';
         }
-
-        return false;
     });
 
     /* Show a rule */

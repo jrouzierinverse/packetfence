@@ -98,7 +98,7 @@ Example:
 
 =head4 Add callbacks to an existing pf::config::cached object
 
-If the name already exists, the current callback is replaced with the newer callback keeping it's calling order.
+If the name already exists, it replaces the previous callback keeping it's calling order.
 
 When adding a callback to an existing pf::config::cached object it will not be called.
 If it needs to be called it must be done manually.
@@ -133,7 +133,7 @@ They should be stored in a package variable.
 
 =head3 Readonly
 
-The following methods are safe to call for readonly access to configuration data
+If you are only reading the data and not creating other data then these methods are safe to use:
 
 =over
 
@@ -247,7 +247,7 @@ use List::Util qw(first);
 
 
 our $CACHE;
-our %LOADED_CONFIGS;
+our @LOADED_CONFIGS;
 our %ON_RELOAD;
 our %ON_FILE_RELOAD;
 our @ON_DESTROY_REFS = (
@@ -300,8 +300,8 @@ sub new {
     my $onReload = delete $params{'-onreload'} || [];
     my $onFileReload = delete $params{'-onfilereload'} || [];
     if($file) {
-        if(exists $LOADED_CONFIGS{$file}) {
-            $self = $LOADED_CONFIGS{$file};
+        $self = first { $_->GetFileName eq $file} @LOADED_CONFIGS;
+        if( defined $self) {
             #Adding the reload and filereload callbacks
             $self->addReloadCallbacks(@$onReload) if @$onReload;
             $self->addFileReloadCallbacks(@$onFileReload) if @$onFileReload;
@@ -317,6 +317,8 @@ sub new {
                     unlockFilehandle($lock);
                     $config->SetFileName($file);
                     $config->SetWriteMode($WRITE_PERMISSIONS);
+                    my $mode = oct($config->GetWriteMode);
+                    chmod $mode, $file;
                     return $config;
                 }
             );
@@ -326,7 +328,7 @@ sub new {
     }
     if ($config) {
         $self = \$config;
-        $LOADED_CONFIGS{$file} = $self;
+        push @LOADED_CONFIGS, $self;
         $ON_RELOAD{$file} = [];
         $ON_FILE_RELOAD{$file} = [];
         bless $self,$class;
@@ -385,11 +387,33 @@ sub RewriteConfig {
             $file,
             sub { return $config; }, 1
         );
+        $config->SetWriteMode($WRITE_PERMISSIONS);
+        my $mode = oct($config->GetWriteMode);
+        chmod $mode, $file;
         $self->_callReloadCallbacks();
         $self->_callFileReloadCallbacks();
     }
     unlockFilehandle($lock);
     return $result;
+}
+
+
+=head2 Rollback
+
+Rollback to current version of config in the cache
+Reverting all current changes
+
+=cut
+
+sub Rollback {
+    my ($self) = @_;
+    my $cache = $self->cache;
+    my $config = $self->config;
+    my $file = $config->GetFileName;
+    $cache->l1_cache->remove($file);
+    my $old_config = $cache->get($file);
+    $$self = $old_config;
+    $self->_callReloadCallbacks();
 }
 
 =head2 _callReloadCallbackss
@@ -672,7 +696,7 @@ ReloadConfigs reload all configs and call any register callbacks
 sub ReloadConfigs {
     my $logger = get_logger();
     $logger->trace("Reloading all configs");
-    foreach my $config (values %LOADED_CONFIGS) {
+    foreach my $config (@LOADED_CONFIGS) {
         $config->ReadConfig();
     }
 }
@@ -759,7 +783,7 @@ sub unloadConfig {
     my $config = $self->config;
     if($config) {
         my $file = $config->GetFileName;
-        delete $LOADED_CONFIGS{$file};
+        @LOADED_CONFIGS = grep { $config->GetFileName ne $file  } @LOADED_CONFIGS;
     }
 }
 

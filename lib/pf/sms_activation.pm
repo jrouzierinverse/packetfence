@@ -78,8 +78,8 @@ sub sms_activation_db_prepare {
     ];
 
     $sms_activation_statements->{'sms_activation_view_sql'} = get_db_handle()->prepare(qq[
-        SELECT code_id, mac, phone_number, carrier_id, activation_code, expiration, status 
-        FROM sms_activation 
+        SELECT code_id, mac, phone_number, carrier_id, activation_code, expiration, status
+        FROM sms_activation
         WHERE code_id = ?
     ]);
 
@@ -89,7 +89,7 @@ sub sms_activation_db_prepare {
     ]);
 
     $sms_activation_statements->{'sms_activation_view_by_code_sql'} = get_db_handle()->prepare(qq[
-        SELECT code_id, mac, phone_number, email_pattern as carrier_email_pattern, activation_code, expiration, status 
+        SELECT code_id, mac, phone_number, email_pattern as carrier_email_pattern, activation_code, expiration, status
         FROM sms_activation LEFT JOIN sms_carrier ON carrier_id=sms_carrier.id
         WHERE activation_code = ?
     ]);
@@ -97,7 +97,7 @@ sub sms_activation_db_prepare {
     $sms_activation_statements->{'sms_activation_add_sql'} = get_db_handle()->prepare(qq[
         INSERT INTO sms_activation (
             mac, phone_number, carrier_id, activation_code, expiration, status
-        ) VALUES (?, ?, ?, ?, ?, ?) 
+        ) VALUES (?, ?, ?, ?, ?, ?)
     ]);
 
     $sms_activation_statements->{'sms_activation_modify_status_sql'} = get_db_handle()->prepare(
@@ -137,9 +137,9 @@ sub sms_carrier_view_all {
         # Retrieve all carriers
         $query = db_query_execute(SMS_ACTIVATION, $sms_activation_statements,
                                   'sms_activation_carrier_view_all_sql');
-        $query->finish();
     }
     my $val = $query->fetchall_arrayref({});
+    $query->finish();
 
     return $val;
 }
@@ -168,10 +168,11 @@ sub add {
 =head2 invalidate_code - invalidate all unverified PIN codes for a given mac and phone
 
 =cut
+
 sub invalidate_codes {
     my ($mac, $phone) = @_;
 
-    return(db_query_execute(SMS_ACTIVATION, $sms_activation_statements, 
+    return(db_query_execute(SMS_ACTIVATION, $sms_activation_statements,
                             'sms_activation_change_status_old_same_mac_phone_sql', $INVALIDATED, $mac, $phone, $UNVERIFIED));
 }
 
@@ -221,7 +222,7 @@ sub _unpack_activation_code {
 
 sub modify_status {
     my ($code_id, $new_status) = @_;
-    return(db_query_execute(SMS_ACTIVATION, $sms_activation_statements, 
+    return(db_query_execute(SMS_ACTIVATION, $sms_activation_statements,
                             'sms_activation_modify_status_sql', $new_status, $code_id));
 }
 
@@ -231,11 +232,11 @@ sub modify_status {
 
 sub view_by_code {
     my ($activation_code) = @_;
-    my $query = db_query_execute(SMS_ACTIVATION, $sms_activation_statements, 
+    my $query = db_query_execute(SMS_ACTIVATION, $sms_activation_statements,
                                  'sms_activation_view_by_code_sql', $activation_code);
     my $ref = $query->fetchrow_hashref();
     my $logger = Log::Log4perl::get_logger('pf::sms_activation');
-    
+
     # just get one row and finish
     $query->finish();
     return ($ref);
@@ -247,10 +248,10 @@ sub view_by_code {
 
 sub find_unverified_code {
     my ($activation_code) = @_;
-    my $query = db_query_execute(SMS_ACTIVATION, $sms_activation_statements, 
+    my $query = db_query_execute(SMS_ACTIVATION, $sms_activation_statements,
                                  'sms_activation_find_unverified_code_sql', "%".$activation_code, $UNVERIFIED);
     my $ref = $query->fetchrow_hashref();
-    
+
     # just get one row and finish
     $query->finish();
     return ($ref);
@@ -330,7 +331,7 @@ sub send_sms {
       $msg =~ s/\n//g;
       $logger->error($msg);
     }
-    
+
     return $result;
 }
 

@@ -37,16 +37,7 @@ use warnings;
 use lib '/usr/local/pf/lib/';
 
 #use pf::config; # TODO: See note1
-use pf::radius::constants;
-use pf::radius::soapclient;
-use pf::util::freeradius qw(clean_mac);
-
-# Configuration parameter
-use constant SOAP_PORT => '9090'; #TODO: See note1
-use constant API_URI => 'https://www.packetfence.org/PFAPI'; # don't change this unless you know what you are doing
-
-require 5.8.8;
-
+use pf::radius::packetfence::custom;
 # This is very important! Without this, the script will not get the filled hashes from FreeRADIUS.
 our (%RAD_REQUEST, %RAD_REPLY, %RAD_CHECK);
 
@@ -61,21 +52,7 @@ RADIUS calls this method to authorize clients.
 =cut
 
 sub authorize {
-    # For debugging purposes only
-    #&log_request_attributes;
-
-    # is it EAP-based Wired MAC Authentication?
-    if ( is_eap_mac_authentication() ) {
-        # in MAC Authentication the User-Name is the MAC address stripped of all non-hex characters
-        my $mac = $RAD_REQUEST{'User-Name'};
-        # Password will be the MAC address, we set Cleartext-Password so that EAP Auth will perform auth properly
-        $RAD_CHECK{'Cleartext-Password'} = $mac;
-        &radiusd::radlog($RADIUS::L_DBG, "This is a Wired MAC Authentication request with EAP for MAC: $mac. Authentication should pass. File a bug report if it doesn't");
-        return $RADIUS::RLM_MODULE_UPDATED;
-    }
-
-    # otherwise, we don't do a thing
-    return $RADIUS::RLM_MODULE_NOOP;
+    pf::radius::packetfence::custom->authorize(\%RAD_REQUEST, \%RAD_REPLY, \%RAD_CHECK);
 }
 
 =item * post_auth
@@ -85,130 +62,7 @@ Once we authenticated the user's identity, we perform PacketFence's Network Acce
 =cut
 
 sub post_auth {
-    my $radius_return_code = $RADIUS::RLM_MODULE_REJECT;
-    eval {
-        my $mac = clean_mac($RAD_REQUEST{'Calling-Station-Id'});
-        my $port = $RAD_REQUEST{'NAS-Port'};
-
-        # invalid MAC, this certainly happens on some type of RADIUS calls, we accept so it'll go on and ask other modules
-        if ( length($mac) != 17 ) {
-            &radiusd::radlog($RADIUS::L_INFO, "MAC address is empty or invalid in this request. It could be normal on certain radius calls");
-            return $RADIUS::RLM_MODULE_OK;
-        }
-
-        my $data = send_soap_request("radius_authorize",\%RAD_REQUEST);
-        if ($data) {
-
-            my $elements = $data->{'soap:Body'}->{'radius_authorizeResponse'}->{'soapenc:Array'}->{'item'};
-
-            # Get RADIUS return code
-            $radius_return_code = shift @$elements;
-
-            if ( !defined($radius_return_code) || !($radius_return_code > $RADIUS::RLM_MODULE_REJECT && $radius_return_code < $RADIUS::RLM_MODULE_NUMCODES) ) {
-                return invalid_answer_handler();
-            }
-
-            # Merging returned values with RAD_REPLY, right-hand side wins on conflicts
-            my $attributes = {@$elements};
-            %RAD_REPLY = (%RAD_REPLY, %$attributes); # the rest of result is the reply hash passed by the radius_authorize
-        } else {
-            return server_error_handler();
-        }
-
-        # For debugging purposes
-        #&radiusd::radlog($RADIUS::L_INFO, "radius_return_code: $radius_return_code");
-
-        if ( $radius_return_code == $RADIUS::RLM_MODULE_OK ) {
-            if ( defined($RAD_REPLY{'Tunnel-Private-Group-ID'}) ) {
-                &radiusd::radlog($RADIUS::L_AUTH, "Returning vlan ".$RAD_REPLY{'Tunnel-Private-Group-ID'}." "
-                    . "to request from $mac port $port");
-            } else {
-                &radiusd::radlog($RADIUS::L_AUTH, "request from $mac port $port was accepted but no VLAN returned. "
-                    . "This could be normal. See server logs for details.");
-            }
-        } else {
-            &radiusd::radlog($RADIUS::L_INFO, "request from $mac port $port was not accepted but a proper error code was provided. "
-                . "Check server side logs for details");
-        }
-
-        &radiusd::radlog($RADIUS::L_DBG, "PacketFence RESULT RESPONSE CODE: $radius_return_code (2 means OK)");
-
-        # Uncomment for verbose debugging with radius -X
-        # Warning: This is a native module so you shouldn't run it with radiusd in threaded mode (default)
-        # use Data::Dumper;
-        # $Data::Dumper::Terse = 1; $Data::Dumper::Indent = 0; # pretty output for rad logs
-        # &radiusd::radlog($RADIUS::L_DBG, "PacketFence COMPLETE REPLY: ". Dumper(\%RAD_REPLY));
-    };
-    if ($@) {
-        &radiusd::radlog($RADIUS::L_ERR, "An error occurred while processing the authorize SOAP request: $@");
-    }
-
-    return $radius_return_code;
-}
-
-=item * server_error_handler
-
-Called whenever there is a server error beyond PacketFence's control (401, 404, 500)
-
-If a customer wants to degrade gracefully, he should put some logic here to assign good VLANs in a degraded way. Two examples are provided commented in the file.
-
-=cut
-
-sub server_error_handler {
-   # no need to log here as on_fault is already triggered
-   return $RADIUS::RLM_MODULE_FAIL;
-
-   # TODO provide complete examples
-   # for example:
-   # send an email
-   # set vlan default according to $nas_ip
-   # return $RADIUS::RLM_MODULE_OK
-
-   # or to fail open:
-   # return $RADIUS::RLM_MODULE_OK
-}
-
-=item * invalid_answer_handler
-
-Called whenever an invalid answer is returned from the server
-
-=cut
-
-sub invalid_answer_handler {
-    &radiusd::radlog($RADIUS::L_ERR, "No or invalid reply in SOAP communication with server. Check server side logs for details.");
-    &radiusd::radlog($RADIUS::L_DBG, "PacketFence UNDEFINED RESULT RESPONSE CODE");
-    &radiusd::radlog($RADIUS::L_DBG, "PacketFence RESULT VLAN COULD NOT BE DETERMINED");
-    return $RADIUS::RLM_MODULE_FAIL;
-}
-
-=item * is_eap_mac_authentication
-
-Returns TRUE (1) or FALSE (0) based on if query is EAP-based MAC Authentication
-
-EAP-based MAC Authentication is like MAC Authentication except that instead of using a RADIUS-only request
-(like most vendor do) it's using EAP inside RADIUS to authenticate the MAC.
-
-=cut
-
-sub is_eap_mac_authentication {
-    # EAP and User-Name is a MAC address
-    if ( exists($RAD_REQUEST{'EAP-Type'}) && $RAD_REQUEST{'User-Name'} =~ /[0-9a-fA-F]{12}/ ) {
-        # clean station MAC
-        my $mac = lc($RAD_REQUEST{'Calling-Station-Id'});
-        $mac =~ s/ /0/g;
-        # trim garbage
-        $mac =~ s/[\s\-\.:]//g;
-
-        if ( length($mac) == 12 ) {
-            # if Calling MAC and User-Name are the same thing, then we are processing a EAP Mac Auth request
-            if ($mac eq lc($RAD_REQUEST{'User-Name'})) {
-                return 1;
-            }
-        } else {
-            &radiusd::radlog($RADIUS::L_DBG, "MAC inappropriate for comparison. Can't tell if we are in EAP Wired MAC Auth case.");
-        }
-    }
-    return 0;
+    pf::radius::packetfence::custom->post_auth(\%RAD_REQUEST, \%RAD_REPLY, \%RAD_CHECK);
 }
 
 #
@@ -217,70 +71,42 @@ sub is_eap_mac_authentication {
 
 # Function to handle authenticate
 sub authenticate {
-
+    pf::radius::packetfence::custom->authenticate(\%RAD_REQUEST, \%RAD_REPLY, \%RAD_CHECK);
 }
 
 # Function to handle preacct
 sub preacct {
-        # For debugging purposes only
-#       &log_request_attributes;
-
+    pf::radius::packetfence::custom->authenticate(\%RAD_REQUEST, \%RAD_REPLY, \%RAD_CHECK);
 }
 
 # Function to handle accounting
 sub accounting {
-        # For debugging purposes only
-#       &log_request_attributes;
-
+    pf::radius::packetfence::custom->accounting(\%RAD_REQUEST, \%RAD_REPLY, \%RAD_CHECK);
 }
 
 # Function to handle checksimul
 sub checksimul {
-        # For debugging purposes only
-#       &log_request_attributes;
-
+    pf::radius::packetfence::custom->checksimul(\%RAD_REQUEST, \%RAD_REPLY, \%RAD_CHECK);
 }
 
 # Function to handle pre_proxy
 sub pre_proxy {
-        # For debugging purposes only
-#       &log_request_attributes;
-
+    pf::radius::packetfence::custom->pre_proxy(\%RAD_REQUEST, \%RAD_REPLY, \%RAD_CHECK);
 }
 
 # Function to handle post_proxy
 sub post_proxy {
-        # For debugging purposes only
-#       &log_request_attributes;
-
+    pf::radius::packetfence::custom->post_proxy(\%RAD_REQUEST, \%RAD_REPLY, \%RAD_CHECK);
 }
 
 # Function to handle xlat
 sub xlat {
-        # For debugging purposes only
-#       &log_request_attributes;
-
+    pf::radius::packetfence::custom->xlat(\%RAD_REQUEST, \%RAD_REPLY, \%RAD_CHECK);
 }
 
 # Function to handle detach
 sub detach {
-        # For debugging purposes only
-#       &log_request_attributes;
-
-        # Do some logging.
-        &radiusd::radlog($RADIUS::L_DBG, "rlm_perl::Detaching. Reloading. Done.");
-}
-
-#
-# Some functions that can be called from other functions
-#
-
-sub log_request_attributes {
-        # This shouldn't be done in production environments!
-        # This is only meant for debugging!
-        for (keys %RAD_REQUEST) {
-                &radiusd::radlog($RADIUS::L_INFO, "RAD_REQUEST: $_ = $RAD_REQUEST{$_}");
-        }
+    pf::radius::packetfence::custom->detach(\%RAD_REQUEST, \%RAD_REPLY, \%RAD_CHECK);
 }
 
 =back

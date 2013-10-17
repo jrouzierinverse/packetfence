@@ -207,15 +207,14 @@ sub readAuthenticationConfigFile {
                     push(@authentication_sources, $current_source);
                     $authentication_lookup{$source_id} = $current_source;
                 }
-                $config->cache->set("authentication_lookup",\%authentication_lookup);
                 $config->cache->set("authentication_sources",\@authentication_sources);
                 update_profiles_guest_modes($cached_profiles_config,"update_profiles_guest_modes");
             }],
             -oncachereload => [
                 on_cache_authentication_reload => sub  {
                     my ($config, $name) = @_;
-                    %authentication_lookup = %{$config->fromCacheUntainted("authentication_lookup")};
                     @authentication_sources = @{$config->fromCacheUntainted("authentication_sources")};
+                    %authentication_lookup = map { $_->id => $_ } @authentication_sources;
                 },
             ]
         );

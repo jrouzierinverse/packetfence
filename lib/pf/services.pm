@@ -271,12 +271,15 @@ sub service_ctl {
                 elsif ($daemon =~ "snort") {
                     $pid = 0;
                     if (defined $monitor_int) {
-                        if (-e "$install_dir/var/run/${daemon}_${monitor_int}.pid") {
-                            chomp( $pid = `cat $install_dir/var/run/${daemon}_${monitor_int}.pid`);
+                        my $pid_file = "$install_dir/var/run/${daemon}_${monitor_int}.pid";
+                        $pid_file =~ /^(.*)$/;
+                        $pid_file = $1;
+                        if (-e $pid_file ) {
+                            chomp( $pid = `cat $pid_file` );
                             my $ppt = new Proc::ProcessTable;
                             my $proc = first { defined($_) } grep { $_->pid == $pid } @{ $ppt->table };
                             if (!defined($proc)) {
-                                unlink( $install_dir . "/var/run/${daemon}_${monitor_int}.pid" );
+                                unlink( $pid_file );
                                 return(0);
                             }
                         }

@@ -77,6 +77,7 @@ use pf::config::ui;
 use pf::pfcmd;
 use pf::util;
 use HTTP::Status qw(is_success);
+use List::MoreUtils qw(uniq);
 
 # Perl taint mode setup (see: perlsec)
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -1233,9 +1234,9 @@ sub service {
     my (@services, %diff);
     if ( $service ne 'pf' ) {
         # make sure that snort is not started without pfdetect
-        if ($service eq 'snort') {
+        if ($service eq 'snort' || $service eq "suricata" ) {
             if ( !pf::services::service_ctl( 'pfdetect', 'status' ) ) {
-                $logger->info('addind pfdetect to list of services so that snort can be started');
+                $logger->info('addind pfdetect to list of services so that $service can be started');
                 push @services, 'pfdetect';
             }
         }
@@ -1243,6 +1244,7 @@ sub service {
     } else {
         @services =  @pf::services::ALL_SERVICES;
     }
+    @services = uniq @services;
 
     my @alreadyRunningServices = ();
     if ( lc($command) eq 'start' ) {

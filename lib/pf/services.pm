@@ -332,10 +332,7 @@ sub service_ctl {
                 last CASE;
             };
             $action eq "restart" && do {
-                service_ctl( "pfdetect", "stop" ) if ( $daemon eq "snort" || $daemon eq "suricata" );
                 service_ctl( $daemon, "stop" );
-
-                service_ctl( "pfdetect", "start" ) if ( $daemon eq "snort" || $daemon eq "suricata" );
                 service_ctl( $daemon, "start" );
                 last CASE;
             };

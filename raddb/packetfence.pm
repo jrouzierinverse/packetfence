@@ -26,7 +26,7 @@ Once cleaned:
 
 - Uncomment line: $curl->setopt(CURLOPT_URL, 'http://127.0.0.1:' . $Config{'ports'}{'soap'});
 
-Search for 'note1' to find the appropriate lines. 
+Search for 'note1' to find the appropriate lines.
 
 =cut
 
@@ -146,21 +146,21 @@ sub post_auth {
         if ( ref($RAD_REQUEST{$key}) eq 'ARRAY' ) {
             my $array_content = '';
             my $array_counter = 0;  # that one is actually important...
-            $request_content = $request_content . 
+            $request_content = $request_content .
                 "<c-gensym$counter xsi:type=\"xsd:string\">$key</c-gensym$counter>";
             foreach my $array_value ( @{$RAD_REQUEST{$key}} ) {
                 $array_counter += 1;    # that one is actually important...
                 $array_content = $array_content . "<item xsi:type=\"xsd:string\">$array_value</item>";
                 $counter += 1;  # looks like this one is not mandatory, we still use it to keep track of keys/values
             }
-            $request_content = $request_content . 
+            $request_content = $request_content .
                 "<soapenc:Array soapenc:arrayType=\"xsd:string[$array_counter]\" xsi:type=\"soapenc:Array\">";
             $request_content = $request_content . $array_content;
             $request_content = $request_content . "</soapenc:Array>";
         } else {
-            $request_content = $request_content . 
+            $request_content = $request_content .
                 "<c-gensym$counter xsi:type=\"xsd:string\">$key</c-gensym$counter>";
-            $request_content = $request_content . 
+            $request_content = $request_content .
                 "<c-gensym$counter xsi:type=\"xsd:string\">$RAD_REQUEST{$key}</c-gensym$counter>";
             $counter += 1;  # looks like this one is not mandatory, we still use it to keep track of keys/values
         }
@@ -175,6 +175,7 @@ sub post_auth {
     $curl->setopt(CURLOPT_HEADER, 0);
     $curl->setopt(CURLOPT_URL, 'http://127.0.0.1:' . SOAP_PORT); # TODO: See note1
 #    $curl->setopt(CURLOPT_URL, 'http://127.0.0.1:' . $Config{'ports'}{'soap'}); # TODO: See note1
+    $curl->setopt(CURLOPT_HTTPHEADER, ['Content-Type: text/xml; charset=UTF-8']);
     $curl->setopt(CURLOPT_POSTFIELDS, $request);
     $curl->setopt(CURLOPT_WRITEDATA, \$response_body);
 
@@ -242,7 +243,7 @@ If a customer wants to degrade gracefully, he should put some logic here to assi
 =cut
 sub server_error_handler {
    # no need to log here as on_fault is already triggered
-   return $RADIUS::RLM_MODULE_FAIL; 
+   return $RADIUS::RLM_MODULE_FAIL;
 
    # TODO provide complete examples
    # for example:
@@ -270,7 +271,7 @@ sub invalid_answer_handler {
 
 Returns TRUE (1) or FALSE (0) based on if query is EAP-based MAC Authentication
 
-EAP-based MAC Authentication is like MAC Authentication except that instead of using a RADIUS-only request 
+EAP-based MAC Authentication is like MAC Authentication except that instead of using a RADIUS-only request
 (like most vendor do) it's using EAP inside RADIUS to authenticate the MAC.
 
 =cut
@@ -385,17 +386,17 @@ Copyright (C) 2006-2010, 2013 Inverse inc.
 
 =head1 LICENSE
 
-This program is free software: you can redistribute it and/or modify 
-it under the terms of the GNU General Public License as published by 
-the Free Software Foundation, either version 3 of the License, or 
-(at your option) any later version. 
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-This program is distributed in the hope that it will be useful, 
-but WITHOUT ANY WARRANTY; without even the implied warranty of 
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
-GNU General Public License for more details. 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License 
+You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut

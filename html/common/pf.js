@@ -93,40 +93,15 @@ function performRedirect(destination_url) {
  */
 function detectNetworkAccess(retry_delay, destination_url, redirect_url, external_ip) {
     "use strict";
-    var errorDetected;
-    var loaded;
-    var netdetect = $('netdetect');
-    netdetect.onerror = function() {
-        errorDetected = true;
-        loaded = false;
-    };
-    netdetect.onload = function() {
-        errorDetected = false;
-        loaded = true;
-    };
-    var checker;
-    var initNetDetect = function() {
-        errorDetected = loaded = undefined;
-        var netdetect = $('netdetect');
-        netdetect.src = "http://" + external_ip + "/common/network-access-detection.gif?r=" + Date.now();
-        setTimeout(checker,1000);
-    };
-    checker = function() {
-        var netdetect = $('netdetect');
-        if(errorDetected === true) {
-            initNetDetect();
-        } else if (loaded === true) {
-            networkAccessCallback(destination_url, redirect_url);
-        } else {
-            //Check the width or height of the image since we do not know if it is loaded
-            if(netdetect.width || netdetect.height) {
-                networkAccessCallback(destination_url, redirect_url);
-            } else {
-                initNetDetect();
-            }
-        }
+    var checkurl = "http://" + external_ip + "/common/network-access-detection.gif?r=" + Date.now();
+    Offline.options = {checks: {image: {url: checkurl}}};
+    Offline.on('confirmed-up',function() {
+        networkAccessCallback(destination_url, redirect_url)
+    });
+    var run = function(){
+        Offline.check();
     }
-    initNetDetect();
+    setInterval(run,400);
 }
 
 /**

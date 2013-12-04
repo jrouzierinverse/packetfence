@@ -103,8 +103,7 @@ sub handler {
     my $logger = Log::Log4perl->get_logger(__PACKAGE__);
     $logger->trace('hitting redirector');
     my $url = $r->construct_url;
-    my $orginal_url = Apache2::Util::escape_path($url,$r->poll);
-
+    my $orginal_url = Apache2::Util::escape_path($url,$r->pool);
     my $proto;
     # Google chrome hack redirect in http
     if ($r->uri =~ /\/generate_204/) {

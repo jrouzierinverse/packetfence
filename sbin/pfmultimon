@@ -1,0 +1,415 @@
+#!/usr/bin/perl
+
+=head1 NAME
+
+pfmon - ARP listener and maintenance threads
+
+=head1 SYNOPSIS
+
+pfmon [options]
+
+ Options:
+   -d      Daemonize
+   -h      Help
+   -v      Verbose
+
+=cut
+
+use warnings;
+use strict;
+use Getopt::Std;
+use Net::Pcap 0.16;
+
+#use English qw( ‐no_match_vars ); # no match avoids regex performance penalty
+use File::Basename qw(basename);
+use POSIX qw(:signal_h pause);
+use Pod::Usage;
+
+use constant INSTALL_DIR => '/usr/local/pf';
+
+use lib INSTALL_DIR . "/lib";
+
+#$thread=1;
+
+use pf::accounting qw(acct_maintenance);
+use pf::config;
+use pf::config::cached;
+use pf::inline::accounting;
+use pf::iplog;
+use pf::locationlog;
+use pf::node;
+use pf::services;
+use pf::traplog;
+use pf::util;
+use pf::violation qw(violation_maintenance);
+use IO::Epoll;
+use Linux::FD;
+
+# initialization
+# --------------
+# assign process name (see #1464)
+our $PROGRAM_NAME = basename($0);
+
+# log4perl init
+Log::Log4perl->init_and_watch(INSTALL_DIR . "/conf/log.conf",
+    $LOG4PERL_RELOAD_TIMER);
+my $logger = Log::Log4perl->get_logger(basename($PROGRAM_NAME));
+Log::Log4perl::MDC->put('proc', basename($PROGRAM_NAME));
+Log::Log4perl::MDC->put('tid',  threads->self->tid());
+
+my %args;
+getopts('dhvr', \%args);
+
+pod2usage(-verbose => 1) if ($args{h});
+
+my $daemonize = $args{d};
+my $verbose   = $args{v};
+my $restart   = $args{r};
+our $running = 1;
+our @CALLBACKS;
+
+# standard signals and daemonize
+daemonize() if ($daemonize);
+
+my $epfd = epoll_create(15);
+
+my $sigset = POSIX::SigSet->new(&POSIX::SIGINT, &POSIX::SIGTERM);
+
+addSignalEvent(
+    $epfd, EPOLLIN, $sigset,
+    sub {
+        my ($epfd, $signalfd) = @_;
+        $signalfd->receive();
+        $running = 0;
+    }
+);
+
+addMaintenanceTask($epfd, 'general maintenance tasks',
+    'general', 'maintenance_interval', \&maintenance_tasks);
+
+while ($running) {
+    my $events = epoll_wait($epfd, 10, -1);
+    foreach my $event (@$events) {
+        my $handler = $CALLBACKS[$event->[0]];
+        $handler->[1]($epfd, $handler->[0], $event);
+    }
+}
+
+foreach my $handler (@CALLBACKS) {
+    next unless defined $handler;
+    my $fh = $handler->[0];
+    POSIX::close( fileno $fh );
+}
+
+close POSIX::close($epfd);
+
+# run the cleanup
+
+END {
+    if (!$args{h}) {
+        deletepid();
+        $logger->info("stopping pfmon");
+    }
+}
+
+sub addMaintenanceTask {
+    my ($epfd, $name, $section, $param, $callback) = @_;
+    addTimerEvent(
+        $epfd,
+        EPOLLIN | (1 << 30),
+        'monotonic',
+        $Config{$section}{$param},
+        sub {
+            my ($epfd, $timerfd) = @_;
+            my $time_info = $timerfd->receive();
+            $callback->();
+            $timerfd->set_timeout($Config{$section}{$param});
+            my $timeout = $timerfd->get_timeout();
+            $logger->trace("$name will run in $timeout");
+            modFileHandlerEvent($epfd, EPOLLIN | (1 << 30), $timerfd);
+        }
+    );
+}
+
+sub addSignalEvent {
+    my ($epfd, $flags, $sigset, $callback) = @_;
+    sigprocmask(&POSIX::SIG_BLOCK, $sigset, undef);
+    my $signalfd1 = Linux::FD::Signal->new($sigset);
+    return addFileHandlerEvent($epfd, $flags, $signalfd1, $callback);
+}
+
+sub addTimerEvent {
+    my ($epfd, $flags, $type, @args) = @_;
+    my $callback = pop @args;
+    my $timerfd  = Linux::FD::Timer->new($type);
+    $timerfd->set_timeout(@args);
+    return addFileHandlerEvent($epfd, $flags, $timerfd, $callback);
+}
+
+sub addFileHandlerEvent {
+    my ($epfd, $flags, $fh, $callback) = @_;
+    my $fd = fileno $fh;
+    epoll_ctl($epfd, EPOLL_CTL_ADD, $fd, $flags) >= 0
+      || die "epoll_ctl: $!\n";
+    $CALLBACKS[$fd] = [$fh, $callback];
+    return $fh;
+}
+
+sub modFileHandlerEvent {
+    my ($epfd, $flags, $fh, $callback) = @_;
+    my $fd = fileno $fh;
+    epoll_ctl($epfd, EPOLL_CTL_MOD, $fd, $flags) >= 0
+      || die "epoll_ctl: $!\n";
+    if ($callback) {
+        $CALLBACKS[$fd] = [$fh, $callback];
+    }
+    return $fh;
+}
+
+exit(0);
+
+=head1 SUBROUTINES
+
+=over
+
+=item arp_detector
+
+Listens to ARP traffic and logs.
+
+In PacketFence 3.0 we dropped support for ARP mode. This method has been
+severely crippled as part of that work. However it has been kept around since
+we might introduce ARP surveillance in the future.
+
+=cut
+
+sub arp_detector {
+    my ($eth) = @_;
+    my $logger = Log::Log4perl::get_logger('pfmon::arp_detector');
+    Log::Log4perl::MDC->put('tid', threads->self->tid());
+
+    my ($filter_t, $net, $mask, $opt, $err);
+    $opt = 1;
+
+    my $pcap_t = Net::Pcap::pcap_open_live($eth, 1500, 1, 0, \$err);
+    my $filter = arp_filter();
+    if ((Net::Pcap::lookupnet($eth, \$net, \$mask, \$err)) == -1) {
+        $logger->logdie("Net::Pcap::lookupnet failed. Error was $err");
+    }
+    if ((Net::Pcap::compile($pcap_t, \$filter_t, $filter, $opt, $net)) == -1)
+    {
+        $logger->logdie("Unable to compile filter string '$filter'");
+    }
+    Net::Pcap::setfilter($pcap_t, $filter_t);
+    Net::Pcap::loop($pcap_t, -1, \&process_packet, $eth);
+}
+
+sub process_packet {
+    my ($user_data, $header, $packet) = @_;
+    listen_arp($packet) if ($packet);
+}
+
+=item listen_arp
+
+Listens to ARP traffic and logs.
+
+In PacketFence 3.0 we dropped support for ARP mode.
+This method has been severely crippled as part of that work.
+However it has been kept around since we might introduce ARP surveillance in the future.
+
+=cut
+
+sub listen_arp {
+    my ($type, $srcmac, $srcip, $destmac, $destip) = &decode(@_);
+
+    # below was commented as part of the interface.gateway removal
+    # if re-implementation required, go through conf/networks.conf to determine if it's internal or not
+    #return if ( !isinternal($srcip) );
+
+    if ($type == 1) {
+        $logger->debug(
+            "ARP who-has $destip tell $srcip  $srcmac $srcip $destmac $destip"
+        );
+
+        # commented as part of the interface.gateway removal
+        # if re-implementation required, go through conf/networks.conf to fetch the gateway for a network
+        #my $gip = ip2gateway($srcip);
+        #if ( valid_ip($srcip) && valid_ip($gip) && ( $srcip eq $gip ) ) {
+        if (   $destmac =~ /ff:ff:ff:ff:ff:ff/i
+            || $destmac =~ /00:00:00:00:00:00/i) {
+            $logger->info(
+                "broadcast arp request from router for $destip - re-trapping all nodes"
+            );
+        } elsif (!grep({$_ eq $monitor_int} @listen_ints)) {
+            $logger->info(
+                "flooded arp request from router for $destmac ($destip) - re-trapping all nodes"
+            );
+        } else {
+            $logger->debug("arp request from router for $destmac ($destip)");
+            return;
+        }
+
+        #}
+
+    } elsif ($type == 2) {
+        $logger->debug(
+            "ARP $srcip is-at $srcmac $srcmac $srcip $destmac $destip");
+    }
+}
+
+sub maintenance_tasks {
+    eval {
+        $logger->info("running expire check");
+        iplog_cleanup($Config{'expire'}{'iplog'})
+          if ($Config{'expire'}{'iplog'});
+        locationlog_cleanup($Config{'expire'}{'locationlog'})
+          if ($Config{'expire'}{'locationlog'});
+        node_cleanup($Config{'expire'}{'node'})
+          if ($Config{'expire'}{'node'});
+        traplog_cleanup($Config{'expire'}{'traplog'})
+          if ($Config{'expire'}{'traplog'});
+
+        $logger->info("checking registered nodes for expiration");
+        nodes_maintenance();
+
+        $logger->info("checking violations for expiration");
+        violation_maintenance();
+
+        if (isenabled($Config{'inline'}{'accounting'})) {
+            inline_accounting_maintenance(
+                $Config{'inline'}{'accounting_session_timeout'});
+        }
+
+        $logger->info(
+            "checking accounting data for potential bandwidth abuse");
+        acct_maintenance();
+
+        #reload all cached configs after each iteration
+        pf::config::cached::ReloadConfigs();
+    };
+    if ($@) {
+        $logger->error("Error $@");
+        pf::config::cached::ReloadConfigs();
+    }
+}
+
+sub cleanup {
+    while ($running) {
+
+        # run these functions every $maintenance_interval
+        eval {
+            $logger->info("running expire check");
+            iplog_cleanup($Config{'expire'}{'iplog'})
+              if ($Config{'expire'}{'iplog'});
+            locationlog_cleanup($Config{'expire'}{'locationlog'})
+              if ($Config{'expire'}{'locationlog'});
+            node_cleanup($Config{'expire'}{'node'})
+              if ($Config{'expire'}{'node'});
+            traplog_cleanup($Config{'expire'}{'traplog'})
+              if ($Config{'expire'}{'traplog'});
+
+            $logger->info("checking registered nodes for expiration");
+            nodes_maintenance();
+
+            $logger->info("checking violations for expiration");
+            violation_maintenance();
+
+            if (isenabled($Config{'inline'}{'accounting'})) {
+                inline_accounting_maintenance(
+                    $Config{'inline'}{'accounting_session_timeout'});
+            }
+
+            $logger->info(
+                "checking accounting data for potential bandwidth abuse");
+            acct_maintenance();
+
+            #reload all cached configs after each iteration
+            pf::config::cached::ReloadConfigs();
+        };
+        if ($@) {
+            $logger->error("Error restarting pfmon: $@");
+            deletepid();
+            exec "${install_dir}/sbin/pfmon", @ARGV;
+        }
+        alarm $Config{'general'}{'maintenance_interval'};
+        pause;
+    }
+}
+
+=item decode
+
+Encapsulate the ARP packet decoding.
+
+=cut
+
+sub decode {
+    my $pkt = shift;
+
+    my ($m1,  $m2,     $proto, $hwas, $pas, $hwal,
+        $pal, $opcode, $sha,   $spa,  $tha, $tpa
+    ) = unpack('H12H12nnnCCnH12NH12N', $pkt);
+
+    return ($opcode, clean_mac($sha), int2ip($spa), clean_mac($tha),
+        int2ip($tpa));
+}
+
+sub daemonize {
+    chdir '/' or $logger->logdie("Can't chdir to /: $!");
+    open STDIN, '<', '/dev/null'
+      or $logger->logdie("Can't read /dev/null: $!");
+    my ($login, $pass, $uid, $gid) = getpwnam('pf')
+      or die "pf not in passwd file";
+    my $log_file = "$install_dir/logs/pfmon";
+    open STDOUT, '>>', "$log_file"
+      or $logger->logdie("Can't write to $log_file: $!");
+    chown $uid, $gid, $log_file;
+    defined(my $pid = fork) or $logger->logdie("pfmon: could not fork: $!");
+    POSIX::_exit(0) if ($pid);
+
+    if (!POSIX::setsid()) {
+        $logger->error("could not start a new session: $!");
+
+        #    die("pfmon: could not start a new session: $!\n");
+    }
+    open STDERR, '>&STDOUT' or $logger->logdie("Can't dup stdout: $!");
+    createpid();
+}
+
+sub normal_sighandler {
+    $running = 0;
+}
+
+=back
+
+=head1 AUTHOR
+
+Inverse inc. <info@inverse.ca>
+
+Minor parts of this file may have been contributed. See CREDITS.
+
+=head1 COPYRIGHT
+
+Copyright (C) 2005-2013 Inverse inc.
+
+Copyright (C) 2005 Kevin Amorin
+
+Copyright (C) 2005 David LaPorte
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+USA.
+
+=cut
+

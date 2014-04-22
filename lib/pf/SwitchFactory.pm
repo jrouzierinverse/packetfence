@@ -123,6 +123,7 @@ sub instantiate {
         return 0;
     }
     my $switch_data = $SwitchConfig{$requestedSwitch};
+    my $switch_overlay = $switch_overlay_config->read($requestedSwitch) || {};
 
     # find the module to instantiate
     my $type;
@@ -139,14 +140,14 @@ sub instantiate {
             . "Read the following message for details: $@");
         return 0;
     }
-
     $logger->debug("creating new $type object");
     return $type->new(
          id => $requestedSwitch,
          ip => $switch_ip,
          switchIp => $switch_ip,
          switchMac => $switch_mac,
-         %$switch_data
+         %$switch_data,
+         %$switch_overlay
     );
 }
 

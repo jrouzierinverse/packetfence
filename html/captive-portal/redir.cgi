@@ -35,7 +35,7 @@ use pf::web::billing 1.00;
 use pf::web::custom;
 use pf::sms_activation;
 
-use pf::mdm
+use pf::provisioner
 
 Log::Log4perl->init("$conf_dir/log.conf");
 my $logger = Log::Log4perl->get_logger('redir.cgi');
@@ -158,7 +158,7 @@ if ($unreg && isenabled($Config{'trapping'}{'registration'})){
 my $node_info = node_view($mac);
 if (defined($node_info) && $node_info->{'status'} eq $pf::node::STATUS_PENDING) {
  if (defined( $portalSession->getProfile()->getAuthorizer()) &&  $node_info->{'status'} eq $pf::node::STATUS_PENDING){
-    my $authorizer = pf::mdm->new($portalSession->getProfile()->getAuthorizer());
+    my $authorizer = pf::provisioner->new($portalSession->getProfile()->getAuthorizer());
 
     unless($authorizer->authorize($portalSession->getClientMac()) == 1){ 
       pf::web::generate_authorizer_page($portalSession, $node_info);

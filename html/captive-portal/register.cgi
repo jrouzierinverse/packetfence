@@ -33,7 +33,7 @@ use pf::authentication;
 use pf::Authentication::constants;
 use List::MoreUtils qw(any);
 
-use pf::mdm
+use pf::provisioner
 
 Log::Log4perl->init("$conf_dir/log.conf");
 my $logger = Log::Log4perl->get_logger('register.cgi');
@@ -127,7 +127,7 @@ elsif (defined($cgi->url_param('mode'))) {
   pf::web::generate_error_page($portalSession, i18n("error: incorrect mode"));
 }
 elsif (defined( $portalSession->getProfile()->getAuthorizer()) &&  node_view($portalSession->getClientMac())->{'status'} eq $pf::node::STATUS_PENDING){
-  my $authorizer = pf::mdm->new($portalSession->getProfile()->getAuthorizer());
+  my $authorizer = pf::provisioner->new($portalSession->getProfile()->getAuthorizer());
   unless($authorizer->authorize($portalSession->getClientMac()) == 1){ 
       pf::web::generate_authorizer_page($portalSession, %info);
       exit(0);
@@ -190,7 +190,7 @@ elsif ( (defined($cgi->param('username') ) || $no_username_needed ) && ($cgi->pa
 
   my $authorizer_name = $portalSession->getProfile()->getAuthorizer();
   if(defined($authorizer_name)){
-      my $authorizer = pf::mdm->new($authorizer_name);
+      my $authorizer = pf::provisioner->new($authorizer_name);
       $logger->info("There is an authorizer : $authorizer_name");
       unless($authorizer->authorize($mac) == 1){
           %info = (%info, (status=>$pf::node::STATUS_PENDING));

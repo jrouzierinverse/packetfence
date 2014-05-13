@@ -168,6 +168,7 @@ sub login : Local : Args(0) {
         $c->forward('validateLogin');
         $c->forward('authenticationLogin');
         $c->forward('postAuthentication');
+        $c->forward('checkIfProvisionIsNeeded');
         $c->forward( 'CaptivePortal' => 'webNodeRegister', [$c->stash->{info}->{pid}, %{$c->stash->{info}}] );
         $c->forward( 'CaptivePortal' => 'endPortalSession' );
     }
@@ -235,6 +236,30 @@ sub postAuthentication : Private {
         $info->{unregdate} = $value;
     }
     $c->stash->{info} = $info;
+}
+
+sub checkIfProvisionIsNeeded : Private {
+    my ( $self, $c ) = @_;
+    my $portalSession = $c->portalSession;
+    my $info = $c->stash->{info};
+    my $mac = $portalSession->clientMac;
+    my $provisioner_name = $portalSession->getProfile()->getProvisioner();
+    if (defined($provisioner_name)) {
+        my $provisioner = pf::provisioner->new($provisioner_name);
+        $c->log->info("There is an provisioner : $provisioner_name");
+        unless ($provisioner->authorize($mac) == 1) {
+            $info->{status} = $pf::node::STATUS_PENDING;
+            node_modify($portalSession->getClientMac(), %$info);
+            $c->stash(
+                template      => 'provisioner.html',
+                external_ip   => $Config{'captive_portal'}{'network_detection_ip'},
+                retry_delay   => $CAPTIVE_PORTAL{'NET_DETECT_PENDING_RETRY_DELAY'},
+                initial_delay => $CAPTIVE_PORTAL{'NET_DETECT_PENDING_INITIAL_DELAY'},
+                agent_download_uri => $provisioner->{'agent_download_uri'},
+            );
+            $c->detach();
+        }
+    }
 }
 
 sub validateLogin : Private {

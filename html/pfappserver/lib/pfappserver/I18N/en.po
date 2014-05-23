@@ -1717,20 +1717,20 @@ msgid "MDM type"
 msgstr ""
 
 # pf::admin_roles (Actions)
-msgid "MDM_CREATE"
-msgstr "MDM - Create"
+msgid "PROVISIONING_CREATE"
+msgstr "Provisioning - Create"
 
 # pf::admin_roles (Actions)
-msgid "MDM_DELETE"
-msgstr "MDM - Delete"
+msgid "PROVISIONING_DELETE"
+msgstr "Provisioning - Delete"
 
 # pf::admin_roles (Actions)
-msgid "MDM_READ"
-msgstr "MDM - Read"
+msgid "PROVISIONING_READ"
+msgstr "Provisioning - Read"
 
 # pf::admin_roles (Actions)
-msgid "MDM_UPDATE"
-msgstr "MDM - Update"
+msgid "PROVISIONING_UPDATE"
+msgstr "Provisioning - Update"
 
 # html/pfappserver/root/admin/configuration.tt
 msgid "Main"

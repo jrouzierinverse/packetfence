@@ -1,20 +1,63 @@
 #!/usr/bin/perl
+
 =head1 NAME
 
 reminder-email.pl add documentation
-
-=cut
 
 =head1 DESCRIPTION
 
 reminder-email.pl
 
+=head1 OPTIONS
+
+reminder-email.pl <options>
+
+ Options:
+   -h | -? | --help  Show help message
+   --man             Show man page
+   --expire          The time to expire
+   --expire          The time to expire
+
 =cut
 
 use strict;
 use warnings;
+use Getopt::Long;
+use Pod::Usage;
 
 use lib qw(/usr/local/pf/lib);
+
+my %OPTIONS;
+
+GetOptions(\%OPTIONS, 'help|h|?', 'man', 'expire=i') || pod2usage({-verbose => 1, -exitval => 1, -output => \*STDERR});
+
+pod2usage({-verbose => 1, -exitval => 0, -output => \*STDOUT}) if ($OPTIONS{help});
+
+pod2usage({-verbose => 2, -exitval => 0, -output => \*STDOUT}) if ($OPTIONS{man});
+
+my $message = checkOptions(\%OPTIONS);
+
+pod2usage( {-msg => $message, -verbose => 1, -exitval => 2, -output => \*STDERR}) if defined $message;
+
+my @users = getUsersToRemind(\%OPTIONS);
+
+foreach my $user (@users) {
+    sendReminderEmail(\%OPTIONS, $user);
+}
+
+sub getUsersToRemind {
+    my ($options) = @_;
+
+}
+
+sub sendReminderEmail {
+    my ($options, $user) = @_;
+}
+
+sub checkOptions {
+    my ($options) = @_;
+    return undef;
+}
 
 =head1 AUTHOR
 

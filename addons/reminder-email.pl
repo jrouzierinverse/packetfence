@@ -29,7 +29,10 @@ use lib qw(/usr/local/pf/lib);
 
 my %OPTIONS;
 
-GetOptions(\%OPTIONS, 'help|h|?', 'man', 'expire=i') || pod2usage({-verbose => 1, -exitval => 1, -output => \*STDERR});
+GetOptions(
+    \%OPTIONS, 
+    'help|h|?', 'man', 'expire=s', 'from-email-address=s', 'email-template=s'
+) || pod2usage({-verbose => 1, -exitval => 1, -output => \*STDERR});
 
 pod2usage({-verbose => 1, -exitval => 0, -output => \*STDOUT}) if ($OPTIONS{help});
 
@@ -45,14 +48,26 @@ foreach my $user (@users) {
     sendReminderEmail(\%OPTIONS, $user);
 }
 
+=head2 getUsersToRemind
+
+=cut
+
 sub getUsersToRemind {
     my ($options) = @_;
 
 }
 
-sub sendReminderEmail {
+=head2 getUsersToRemind
+
+=cut
+
+sub getUsersToRemind {
     my ($options, $user) = @_;
 }
+
+=head2 checkOptions
+
+=cut
 
 sub checkOptions {
     my ($options) = @_;

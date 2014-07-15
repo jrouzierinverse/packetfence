@@ -13,10 +13,11 @@ reminder-email.pl
 reminder-email.pl <options>
 
  Options:
-   -h | -? | --help  Show help message
-   --man             Show man page
-   --expire          The time to expire
-   --expire          The time to expire
+   -h | -? | --help              Show help message
+   --man                         Show man page
+   --expire                      How long before the node expires to send the email
+   --from-email-address          The from email address
+   --email-template              The file path of the email template
 
 =cut
 
@@ -24,14 +25,25 @@ use strict;
 use warnings;
 use Getopt::Long;
 use Pod::Usage;
-
 use lib qw(/usr/local/pf/lib);
+use pf::config;
+use Email::Valid;
+use Template;
+use Template::Parser;
+use File::Slurp;
+use MIME::Lite::TT;
 
-my %OPTIONS;
+my %OPTIONS = (
+    expire => '1h',
+    'from-email-address' => $Config{'alerting'}{'fromaddr'} || 'root@' . $fqdn,
+    smtpserver => $Config{'alerting'}{'smtpserver'},
+    subject => 'Your time is almost up',
+    timeout => 20,
+);
 
-GetOptions(
-    \%OPTIONS, 
-    'help|h|?', 'man', 'expire=s', 'from-email-address=s', 'email-template=s'
+GetOptions(\%OPTIONS, 
+    'help|h|?', 'man', 'expire=s', 'from-email-address=s',
+    'email-template=s', 'subject=s', 'smtpserver=s'
 ) || pod2usage({-verbose => 1, -exitval => 1, -output => \*STDERR});
 
 pod2usage({-verbose => 1, -exitval => 0, -output => \*STDOUT}) if ($OPTIONS{help});
@@ -48,6 +60,8 @@ foreach my $user (@users) {
     sendReminderEmail(\%OPTIONS, $user);
 }
 
+=head1 SUBROUTINES
+
 =head2 getUsersToRemind
 
 =cut
@@ -57,12 +71,23 @@ sub getUsersToRemind {
 
 }
 
-=head2 getUsersToRemind
+=head2 sendReminderEmail
 
 =cut
 
-sub getUsersToRemind {
+sub sendReminderEmail {
     my ($options, $user) = @_;
+    my $subject = $options->{subject};
+
+    my $msg = MIME::Lite::TT->new(
+        From        =>  $options->{'from-email-address'},
+        To          =>  $user->{'email'},
+        Subject     =>  encode("MIME-Q", $subject),
+        Template    =>  $options->{'email-template'},
+        TmplParams  =>  { user => $user },
+        TmplUpgrade =>  1,
+    );
+    $msg->send('smtp', $options->{smtpserver}, Timeout => $options->{timeout});
 }
 
 =head2 checkOptions
@@ -71,7 +96,29 @@ sub getUsersToRemind {
 
 sub checkOptions {
     my ($options) = @_;
-    return undef;
+    my $message;
+    my @messages;
+    if (exists $options->{'email-template'}) {
+        my $email_template = $options->{'email-template'};
+        if(-f $email_template) {
+            my $parser = Template::Parser->new;
+            my $text = read_file($email_template);
+            push @messages, "cannot parse template $email_template", $parser->error unless $parser->parse($text);
+            
+        } else {
+            push @messages,"$email_template does not exist";
+        }
+    } else {
+        push @messages,"--email-template is required";
+    }
+    $message = join("\n",@messages,"") if @messages;
+    foreach my $timespec (qw(expire timeout)) {
+        $options->{$timespec} = normalize_time($options->{$timespec});
+        push @messages,"$timespec is not a valid time spec" unless defined $options->{$timespec};
+    }
+    my $from_address = $options->{'from-email-address'};
+    push @messages, "$from_address is an invaild email address" unless Email::Valid->address($from_address);
+    return $message;
 }
 
 =head1 AUTHOR

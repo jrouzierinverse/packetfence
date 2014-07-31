@@ -1,0 +1,13 @@
+<html>
+<body>
+    Edoroam
+    [% IF txt_auth_error %]
+    <div>[%txt_auth_error %]</div>
+    [% END %]
+    [%IF c.session.username %]
+        Generate config
+        <a href="[%c.uri_for(c.controller('WirelessProfile').action_for('index'))%]">IOS</a>
+        <a href="[%c.uri_for(c.controller('WirelessProfile').action_for('profile_xml'))%]">Android</a>
+    [% END %]
+</body>
+</html>

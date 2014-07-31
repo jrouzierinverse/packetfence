@@ -13,6 +13,12 @@ captiveportal::Controller::Root - Root Controller for captiveportal
 
 =cut
 
+sub profile_xml : Path('/profile.xml') : Args(0) {
+    my ($self, $c) = @_;
+    $c->stash->{filename} = "profile.xml";
+    $c->forward('index');
+}
+
 =head1 AUTHOR
 
 root

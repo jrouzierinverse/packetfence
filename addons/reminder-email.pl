@@ -13,11 +13,13 @@ reminder-email.pl
 reminder-email.pl <options>
 
  Options:
-   -h | -? | --help              Show help message
-   --man                         Show man page
-   --expire                      How long before the node expires to send the email
-   --from-email-address          The from email address
-   --email-template              The file path of the email template
+   -h | -? | --help             Show help message
+   --man                        Show man page
+   --expire                     How long before the node expires to send the email
+   --from-email-address         The from email address
+   --email-template             The file path of the email template
+   --subject                    The subject of the email
+   --smtpserver                 The smtp server to use
 
 =cut
 
@@ -64,6 +66,8 @@ foreach my $user (@users) {
 
 =head2 getUsersToRemind
 
+ Get all the users that need to be reminded
+
 =cut
 
 sub getUsersToRemind {
@@ -72,6 +76,8 @@ sub getUsersToRemind {
 }
 
 =head2 sendReminderEmail
+
+ Sends the reminder email to the user
 
 =cut
 
@@ -92,33 +98,68 @@ sub sendReminderEmail {
 
 =head2 checkOptions
 
+ Check the options of the script
+
 =cut
 
 sub checkOptions {
     my ($options) = @_;
     my $message;
     my @messages;
+    checkEmailTemplate($options,\@messages);
+    checkTimespecs($options,\@messages);
+    checkEmailAddress($options,\@messages);
+    $message = join("\n",@messages,"") if @messages;
+    return $message;
+}
+
+=head2 checkEmailTemplate
+
+ Check if the email template exists and is a valid template
+
+=cut
+
+sub checkEmailTemplate {
+    my ($options,$messages) = @_;
     if (exists $options->{'email-template'}) {
         my $email_template = $options->{'email-template'};
         if(-f $email_template) {
             my $parser = Template::Parser->new;
             my $text = read_file($email_template);
-            push @messages, "cannot parse template $email_template", $parser->error unless $parser->parse($text);
+            push @$messages, "cannot parse template $email_template", $parser->error unless $parser->parse($text);
             
         } else {
-            push @messages,"$email_template does not exist";
+            push @$messages,"$email_template does not exist";
         }
     } else {
-        push @messages,"--email-template is required";
+        push @$messages,"--email-template is required";
     }
-    $message = join("\n",@messages,"") if @messages;
+}
+
+=head2 checkTimespecs
+
+ Check if expire and timeout are valid timespec
+
+=cut
+
+sub checkTimespecs {
+    my ($options,$messages) = @_;
     foreach my $timespec (qw(expire timeout)) {
         $options->{$timespec} = normalize_time($options->{$timespec});
-        push @messages,"$timespec is not a valid time spec" unless defined $options->{$timespec};
+        push @$messages,"$timespec is not a valid time spec" unless defined $options->{$timespec};
     }
+}
+
+=head2 checkEmailAddress
+
+ Check if the from email address is a valid address
+
+=cut
+
+sub checkEmailAddress {
+    my ($options,$messages) = @_;
     my $from_address = $options->{'from-email-address'};
-    push @messages, "$from_address is an invaild email address" unless Email::Valid->address($from_address);
-    return $message;
+    push @$messages, "$from_address is an invaild email address" unless Email::Valid->address($from_address);
 }
 
 =head1 AUTHOR

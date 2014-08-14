@@ -34,6 +34,8 @@ use Template;
 use Template::Parser;
 use File::Slurp;
 use MIME::Lite::TT;
+use pf::node;
+
 
 my %OPTIONS = (
     expire => '1h',

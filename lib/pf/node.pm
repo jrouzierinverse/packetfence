@@ -270,6 +270,9 @@ sub node_db_prepare {
     $node_statements->{'node_expire_lastarp_sql'} = get_db_handle()->prepare(
         qq [ select mac from node where unix_timestamp(last_arp) < (unix_timestamp(now()) - ?) and last_arp!=0 ]);
 
+    $node_statements->{'nodes_expiring_soon'} = get_db_handle()->prepare(
+        qq [ select mac, person.* from node LEFT JOIN person using pid where status = "$STATUS_REGISTERED" and unregdate IS NOT NULL and unregdate != '0000-00-00 00:00:00' and ( unix_timestamp(unregdate) - unix_timestamp(now()) ) <  BETWEEN 0 AND ? ]);
+
     $node_statements->{'node_expire_lastdhcp_sql'} = get_db_handle()->prepare(
         qq [ select mac from node where unix_timestamp(last_dhcp) < (unix_timestamp(now()) - ?) and last_dhcp !=0 and status="$STATUS_UNREGISTERED" ]);
 

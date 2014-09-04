@@ -15,11 +15,12 @@ reminder-email.pl <options>
  Options:
    -h | -? | --help             Show help message
    --man                        Show man page
-   --expire                     How long before the node expires to send the email
-   --from-email-address         The from email address
-   --email-template             The file path of the email template
-   --subject                    The subject of the email
-   --smtpserver                 The smtp server to use
+   --expire                     How long before the node expires to send the email (default 1h)
+   --from-email-address         The from email address (default alerting.fromaddr or root@fqdn)
+   --email-template             The file path of the email template 
+   --subject                    The subject of the email (default Your time is almost up)
+   --smtpserver                 The smtp server to use (default alerting.smtpserver)
+   --dry-run                    Do not send email just show which emails will be sent
 
 =cut
 
@@ -34,7 +35,7 @@ use Template;
 use Template::Parser;
 use File::Slurp;
 use MIME::Lite::TT;
-use pf::node;
+use pf::person;
 
 
 my %OPTIONS = (
@@ -42,12 +43,13 @@ my %OPTIONS = (
     'from-email-address' => $Config{'alerting'}{'fromaddr'} || 'root@' . $fqdn,
     smtpserver => $Config{'alerting'}{'smtpserver'},
     subject => 'Your time is almost up',
+    'dry-run' => undef,
     timeout => 20,
 );
 
 GetOptions(\%OPTIONS, 
     'help|h|?', 'man', 'expire=s', 'from-email-address=s',
-    'email-template=s', 'subject=s', 'smtpserver=s'
+    'email-template=s', 'subject=s', 'smtpserver=s','dry-run'
 ) || pod2usage({-verbose => 1, -exitval => 1, -output => \*STDERR});
 
 pod2usage({-verbose => 1, -exitval => 0, -output => \*STDOUT}) if ($OPTIONS{help});
@@ -74,7 +76,7 @@ foreach my $user (@users) {
 
 sub getUsersToRemind {
     my ($options) = @_;
-
+    return person_nodes_expiring_in_sql($options->{expire});
 }
 
 =head2 sendReminderEmail
@@ -86,16 +88,21 @@ sub getUsersToRemind {
 sub sendReminderEmail {
     my ($options, $user) = @_;
     my $subject = $options->{subject};
-
+    my $to_email = $user->{'email'};
+    my $from_email = $user->{'from-email-address'};
     my $msg = MIME::Lite::TT->new(
         From        =>  $options->{'from-email-address'},
-        To          =>  $user->{'email'},
+        To          =>  $to_email,
         Subject     =>  encode("MIME-Q", $subject),
         Template    =>  $options->{'email-template'},
         TmplParams  =>  { user => $user },
         TmplUpgrade =>  1,
     );
-    $msg->send('smtp', $options->{smtpserver}, Timeout => $options->{timeout});
+    if($options->{'dry-run'}) {
+        print "Sending email to $to_email from $from_email for nodes $user->{macs}\n";
+    } else {
+        $msg->send('smtp', $options->{smtpserver}, Timeout => $options->{timeout});
+    }
 }
 
 =head2 checkOptions

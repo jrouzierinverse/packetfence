@@ -157,6 +157,17 @@ sub person_db_prepare {
             WHERE pid = ?
             ORDER BY start_date desc ]);
 
+    $person_statements->{'person_nodes_expiring_in_sql'} = get_db_handle()->prepare( qq [
+        SELECT
+            person.pid, min(person.email) email, GROUP_CONCAT(node.mac) as macs
+        FROM person
+            LEFT JOIN node using pid
+        WHERE
+            node.status = "reg" AND node.unregdate IS NOT NULL AND node.unregdate != '0000-00-00 00:00:00'
+            AND ( unix_timestamp(node.unregdate) - unix_timestamp(now()) ) <  BETWEEN 0 AND ?
+        GROUP BY person.pid
+    ]);
+
     $person_db_prepared = 1;
 }
 
@@ -353,6 +364,17 @@ sub person_violations {
     my ($pid) = @_;
 
     return db_data(PERSON, $person_statements, 'person_violations_sql', $pid);
+}
+
+=head2 person_nodes_expiring_in
+
+return the nodes that are expiring in
+
+=cut
+
+sub person_nodes_expiring_in {
+    my ($time) = @_;
+    return db_data(PERSON, $person_statements, 'person_nodes_expiring_in_sql', $time);
 }
 
 =head1 AUTHOR

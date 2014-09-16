@@ -37,6 +37,7 @@ BEGIN {
         person_nodes
         person_violations
         person_custom_search
+        person_nodes_expiring_in
     );
     @EXPORT_OK = qw( $PID_RE );
 }
@@ -159,12 +160,12 @@ sub person_db_prepare {
 
     $person_statements->{'person_nodes_expiring_in_sql'} = get_db_handle()->prepare( qq [
         SELECT
-            person.pid, min(person.email) email, GROUP_CONCAT(node.mac) as macs
+            person.pid, min(person.email) as email, GROUP_CONCAT(node.mac) as macs
         FROM person
-            LEFT JOIN node using pid
+            LEFT JOIN node using (pid)
         WHERE
             node.status = "reg" AND node.unregdate IS NOT NULL AND node.unregdate != '0000-00-00 00:00:00'
-            AND ( unix_timestamp(node.unregdate) - unix_timestamp(now()) ) <  BETWEEN 0 AND ?
+            AND ( unix_timestamp(node.unregdate) - unix_timestamp(now()) ) BETWEEN 0 AND ?
         GROUP BY person.pid
     ]);
 

@@ -35,6 +35,7 @@ use Template;
 use Template::Parser;
 use File::Slurp;
 use MIME::Lite::TT;
+use Encode;
 use pf::person;
 
 
@@ -76,7 +77,7 @@ foreach my $user (@users) {
 
 sub getUsersToRemind {
     my ($options) = @_;
-    return person_nodes_expiring_in_sql($options->{expire});
+    return person_nodes_expiring_in($options->{expire});
 }
 
 =head2 sendReminderEmail
@@ -89,7 +90,7 @@ sub sendReminderEmail {
     my ($options, $user) = @_;
     my $subject = $options->{subject};
     my $to_email = $user->{'email'};
-    my $from_email = $user->{'from-email-address'};
+    my $from_email = $options->{'from-email-address'};
     my $msg = MIME::Lite::TT->new(
         From        =>  $options->{'from-email-address'},
         To          =>  $to_email,

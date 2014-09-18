@@ -166,7 +166,7 @@ sub action_api {
     my @args =
       (
        $Config{'paths'}{ 'external' . $external_id },
-       $mac, $class_info->{'description'}
+       untaint_chain($mac), untaint_chain($class_info->{'description'})
     );
     system(@args);
 }

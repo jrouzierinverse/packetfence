@@ -239,6 +239,8 @@ sub html_redirect {
     $r->content_type('text/html');
     $r->no_cache(1);
     $r->print($response);
+    $r->status(511);
+    $r->status_line('511 Network Authentication Required');
     return Apache2::Const::OK;
 }
 

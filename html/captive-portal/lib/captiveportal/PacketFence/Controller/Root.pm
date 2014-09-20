@@ -56,7 +56,8 @@ index
 
 sub index : Path : Args(0) {
     my ( $self, $c ) = @_;
-    $c->response->redirect('captive-portal');
+    $c->response->status(511);
+    $c->stash(template => 'redirection.html',login_url => '/captive-portal');
 }
 
 

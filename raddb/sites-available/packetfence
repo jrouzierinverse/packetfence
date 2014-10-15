@@ -12,13 +12,7 @@ server packetfence {
         update request {
             FreeRADIUS-Client-IP-Address := "%{Packet-Src-IP-Address}"
         }
-        update control {
-            PacketFence-RPC-Server = ${rpc_host}
-            PacketFence-RPC-Port = ${rpc_port}
-            PacketFence-RPC-User = ${rpc_user}
-            PacketFence-RPC-Pass = ${rpc_pass}
-            PacketFence-RPC-Proto = ${rpc_proto}
-        }
+        $INCLUDE rpc-vars
         packetfence
     }
 
@@ -39,13 +33,7 @@ server packetfence {
     accounting {
         sql
         attr_filter.accounting_response
-        update control {
-            PacketFence-RPC-Server = ${rpc_host}
-            PacketFence-RPC-Port = ${rpc_port}
-            PacketFence-RPC-User = ${rpc_user}
-            PacketFence-RPC-Pass = ${rpc_pass}
-            PacketFence-RPC-Proto = ${rpc_proto}
-        }
+        $INCLUDE rpc-vars
         packetfence
     }
 
@@ -56,13 +44,7 @@ server packetfence {
         exec
         # skip packetfence if we have already treated it in the inner-tunnel
         if (!EAP-Type || (EAP-Type != EAP-TTLS  && EAP-Type != PEAP)) {
-            update control {
-                PacketFence-RPC-Server = ${rpc_host}
-                PacketFence-RPC-Port = ${rpc_port}
-                PacketFence-RPC-User = ${rpc_user}
-                PacketFence-RPC-Pass = ${rpc_pass}
-                PacketFence-RPC-Proto = ${rpc_proto}
-            }
+            $INCLUDE rpc-vars
             packetfence
         }
         Post-Auth-Type REJECT {

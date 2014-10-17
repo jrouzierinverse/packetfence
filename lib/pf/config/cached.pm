@@ -266,15 +266,14 @@ use Time::HiRes qw(stat time gettimeofday);
 use pf::log;
 use pf::CHI;
 use pf::IniFiles;
-use Scalar::Util qw(refaddr reftype tainted);
+use Scalar::Util qw(refaddr reftype tainted blessed);
 use Fcntl qw(:DEFAULT :flock);
 use Storable;
 use File::Flock;
 use File::Spec::Functions qw(splitpath catpath);
 use Readonly;
 use Sub::Name;
-use List::Util qw(first);
-use List::MoreUtils qw(uniq);
+use List::MoreUtils qw(any firstval uniq);
 use Fcntl qw(:flock :DEFAULT :seek);
 use POSIX::2008;
 use Data::Swap();
@@ -283,7 +282,8 @@ use base qw(pf::IniFiles);
 
 
 our $CACHE;
-our @LOADED_CONFIGS;
+our @LOADED_CONFIGS_FILE;
+our %LOADED_CONFIGS;
 our %ON_RELOAD;
 our %ON_FILE_RELOAD;
 our %ON_FILE_RELOAD_ONCE;
@@ -372,8 +372,8 @@ sub new {
     $ON_FILE_RELOAD_ONCE{$file} ||= [];
     $ON_CACHE_RELOAD{$file} ||= [];
     $ON_POST_RELOAD{$file} ||= [];
-    @LOADED_CONFIGS = grep { $_->GetFileName() ne $file } @LOADED_CONFIGS;
-    push @LOADED_CONFIGS, $self;
+    #Adding to the loaded config
+    $self->addToLoadedConfigs();
     $self->addReloadCallbacks(@$onReload) if @$onReload;
     $self->addFileReloadCallbacks(@$onFileReload) if @$onFileReload;
     $self->addFileReloadOnceCallbacks(@$onFileReloadOnce) if @$onFileReloadOnce;
@@ -420,7 +420,7 @@ sub RewriteConfig {
         $self = $self->computeFromPath(
             $file,
             sub {
-                $self->updateCacheControl();
+                $self->ExpireLockFile();
                 return $self;
             },
             1
@@ -548,6 +548,10 @@ sub _doLockOnce {
 
 sub GetDotFileName {
     return _makeIntoDotFile (shift->GetFileName);
+}
+
+sub GetLockFileName {
+    return _makeIntoDotFile (shift->GetFileName . ".lock");
 }
 
 sub _makeIntoDotFile {
@@ -698,7 +702,8 @@ sub ReadConfig {
             $result = $self->SUPER::ReadConfig();
             $reloaded_from_file = 1;
             return $self;
-        }
+        },
+        $force
     );
     $reloaded_from_cache = refaddr($self) != refaddr($new_self);
     if($reloaded_from_cache) {
@@ -717,6 +722,7 @@ Swap the data with cached data
 sub _swap_data {
     my ($self,$new_self) = @_;
     Data::Swap::swap($self,$new_self); 
+    $self->addToLoadedConfigs();
     #Unbless the old data to avoid DESTROY from being called
     unbless($new_self);
     my $cache = $self->cache;
@@ -759,7 +765,7 @@ sub computeFromPath {
     my $computeWrapper = sub {
         my $config = $computeSub->();
         $config->SetLastModTimestamp();
-        setControlFileTimestamp($config);
+        $config->SetLockFileTimeStamp();
         return $config;
     };
     my $result = $self->cache->compute(
@@ -767,8 +773,9 @@ sub computeFromPath {
         {
             expire_if => sub {
                 return 1 if $expire;
-                my $control_file_timestamp = $_[0]->value->{_control_file_timestamp} || -1;
-                return  ( controlFileExpired($control_file_timestamp) && $_[0]->value->HasChanged() ) ;
+                my $value = $_[0]->value;
+                return 1 unless $value;
+                return $value->HasExpired(); 
             },
         },
         $computeWrapper
@@ -778,16 +785,93 @@ sub computeFromPath {
     return $result;
 }
 
+=head2 SetLockFileTimeStamp
+
+Sets the current typestamp of the lock file
+
+=cut
+
+sub SetLockFileTimeStamp {
+    my ($self) = @_;
+    $self->{_last_lock_file_timestamp} = $self->GetCurrentLockFileTimestamp();
+}
+
+=head2 GetLockFileTimeStamp
+
+Gets the last typestamp of the lock file
+
+=cut
+
+sub GetLockFileTimeStamp {
+    my ($self) = @_;
+    $self->{_last_lock_file_timestamp} || -1;
+}
+
+=head2 GetCurrentLockFileTimestamp
+
+Gets the current typestamp of the file
+
+=cut
+
+sub GetCurrentLockFileTimestamp {
+    my ($self) = @_;
+    return pf::IniFiles::_getFileTimestamp($self->GetLockFileName) || -1;
+}
+
+=head2 HasExpired
+
+check to see if the file has expired
+
+=cut
+
+sub HasExpired {
+    my ($self) = @_;
+    my $control_file_timestamp = $self->{_control_file_timestamp} || 0;
+    return  $self->LockFileHasChange() && $self->HasChanged();
+}
+
+=head2 LockFileHasChange
+
+TODO: documention
+
+=cut
+
+sub LockFileHasChange {
+    my ($self) = @_;
+    my $timestamp = $self->GetCurrentLockFileTimestamp;
+    return $timestamp == -1 || $self->GetLockFileTimeStamp != $timestamp;
+}
+
+=head2 setControlFileTimestamp
+
+Stores the current timestamp of var/cache_control file
+
+=cut
+
 sub setControlFileTimestamp {
     my ($self) = @_;
     $self->{_control_file_timestamp} = getControlFileTimestamp();
 }
 
-sub getControlFileTimestamp { int((stat($cache_control_file))[9] || 0) * 1000000000 }
+=head2 getControlFileTimestamp
+
+Get the current timestamp of var/cache_control file
+
+=cut
+
+sub getControlFileTimestamp {
+    return pf::IniFiles::_getFileTimestamp($cache_control_file);
+}
+
+=head2 controlFileExpired
+
+Checks to see if the var/cache_control file has been updated
+
+=cut
 
 sub controlFileExpired {
     my ($timestamp) = @_;
-    $timestamp != getControlFileTimestamp();
+    $timestamp == -1 || $timestamp != getControlFileTimestamp();
 }
 
 
@@ -822,10 +906,12 @@ sub ReloadConfigs {
     return unless controlFileExpired($CACHE_CONTROL_TIMESTAMP);
     $CACHE_CONTROL_TIMESTAMP = getControlFileTimestamp();
     my $logger = get_logger();
-    $logger->trace("Reloading all configs");
-    foreach my $config (@LOADED_CONFIGS) {
+    $logger->trace("Started Reloading all configs");
+    foreach my $config (@LOADED_CONFIGS{@LOADED_CONFIGS_FILE}) {
+        $config->ExpireLockFile() if $force;
         $config->ReadConfig($force);
     }
+    $logger->trace("Finished Reloading all configs");
 }
 
 
@@ -853,7 +939,7 @@ sub _addCallbacks {
     my ($self,$callback_array,@args) = @_;
     if (@args > 1) {
         my ($name,$callback) = splice(@args,0,2);
-        my $callback_data = first { $_->[0] eq $name  } @$callback_array;
+        my $callback_data = firstval { $_->[0] eq $name  } @$callback_array;
         #Adding a name to the anonymous function for debug and tracing purposes
         $callback = subname $name,$callback;
         if ($callback_data) {
@@ -936,6 +1022,22 @@ sub DESTROY {
     }
 }
 
+=head2 addToLoadedConfigs
+
+adds the cached config from the internal global cache
+
+=cut
+
+sub addToLoadedConfigs {
+    my ($self) = @_;
+    my $file = $self->GetFileName;
+    unless ( any { $_ eq $file} ) {
+        push @LOADED_CONFIGS_FILE,$file;
+    }
+    $LOADED_CONFIGS{$file} = $self;
+}
+
+
 =head2 unloadConfig
 
 Unloads the cached config from the internal global cache
@@ -945,7 +1047,8 @@ Unloads the cached config from the internal global cache
 sub unloadConfig {
     my ($self) = @_;
     my $file = $self->GetFileName;
-    @LOADED_CONFIGS = grep { $self->GetFileName ne $file  } @LOADED_CONFIGS;
+    @LOADED_CONFIGS_FILE = grep { $_ ne $file } @LOADED_CONFIGS_FILE;
+    delete $LOADED_CONFIGS{$file};
 }
 
 sub untaint_value {
@@ -1037,6 +1140,16 @@ sub clearAllConfigs {
     $class->cache->remove_multi(\@stored_config_files);
 }
 
+sub ExpireLockFile {
+    my ($self) = @_;
+    my $file = $self->GetLockFileName();
+    sysopen(my $fh,$file,O_RDWR | O_CREAT);
+    POSIX::2008::futimens(fileno $fh);
+    close($fh);
+    my (undef,undef,$uid,$gid) = getpwnam('pf');
+    chown($uid,$gid,$file);
+}
+
 sub updateCacheControl {
     my ($dontCreate) = @_;
     if ( !-e $cache_control_file && !$dontCreate) {
@@ -1046,15 +1159,11 @@ sub updateCacheControl {
     }
     if(-e $cache_control_file) {
         sysopen(my $fh,$cache_control_file,O_RDWR | O_CREAT);
-        my ($seconds) = time();
-        my ($usec, $s) = POSIX::modf($seconds);
-        my $nanosec = int($usec * 1000000000) + int(rand(1000)) + 1000;
-        $s = int($s);
-        POSIX::2008::futimens(fileno $fh, $s, $nanosec, $s, $nanosec);
+        POSIX::2008::futimens(fileno $fh);
         close($fh);
+        my (undef,undef,$uid,$gid) = getpwnam('pf');
+        chown($uid,$gid,$cache_control_file);
     }
-    my (undef,undef,$uid,$gid) = getpwnam('pf');
-    chown($uid,$gid,$cache_control_file);
     return 0;
 }
 

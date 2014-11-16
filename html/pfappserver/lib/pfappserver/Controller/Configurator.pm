@@ -46,6 +46,27 @@ my @steps = (
 
 =head1 SUBROUTINES
 
+=head2 auto
+
+Ensure that we logout the _PF_CONFIGURATOR
+
+=cut
+
+sub auto : Private {
+    my ( $self, $c ) = @_;
+    $c->stash->{installation_type} = $c->model('Configurator')->checkForUpgrade();
+    if ($c->stash->{installation_type} eq $pfappserver::Model::Configurator::CONFIGURATION) {
+        my $admin_url = $c->uri_for($c->controller('Admin')->action_for('index'));
+        $c->log->info("Redirecting to admin interface $admin_url");
+        #Logout the _PF_CONFIGURATOR user and delete their session
+        $c->logout();
+        $c->delete_session();
+        #Send them back to the admin page to log in
+        $c->response->redirect($admin_url);
+        $c->detach();
+    }
+}
+
 =head2 begin
 
 Set the default view to pfappserver::View::Configurator.
@@ -78,18 +99,6 @@ Configurator controller dispatcher
 
 sub object :Chained('/') :PathPart('configurator') :CaptureArgs(0) {
     my ( $self, $c ) = @_;
-
-    $c->stash->{installation_type} = $c->model('Configurator')->checkForUpgrade();
-    if ($c->stash->{installation_type} eq $pfappserver::Model::Configurator::CONFIGURATION) {
-        my $admin_url = $c->uri_for($c->controller('Admin')->action_for('index'));
-        $c->log->info("Redirecting to admin interface $admin_url");
-        #Logout the _PF_CONFIGURATOR user and delete their session
-        $c->logout();
-        $c->delete_session();
-        #Send them back to the admin page to log in
-        $c->response->redirect($admin_url);
-        $c->detach();
-    }
 
     $c->stash->{steps} = \@steps;
     $self->_next_step($c);

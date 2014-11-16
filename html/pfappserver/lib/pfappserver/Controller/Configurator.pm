@@ -135,7 +135,7 @@ Enforcement mechanisms (step 1)
 
 =cut
 
-sub enforcement :Chained('object') :PathPart('enforcement') :Args(0) {
+sub enforcement :Chained('object') :PathPart('enforcement') :Args(0) :AdminRole(CONFIGURATOR) {
     my ( $self, $c ) = @_;
     if ($c->request->method eq 'POST') {
         # Save parameters in user session
@@ -196,7 +196,7 @@ Network interfaces (step 2)
 
 =cut
 
-sub networks :Chained('object') :PathPart('networks') :Args(0) {
+sub networks :Chained('object') :PathPart('networks') :Args(0) :AdminRole(CONFIGURATOR) {
     my ( $self, $c ) = @_;
 
     if ($c->request->method eq 'POST') {
@@ -266,7 +266,7 @@ Database setup (step 3)
 
 # FIXME this is not like we built the rest of pfappserver.. re-architect?
 # the GET is expected to fail on first run, then the javascript calls it again and it should pass...
-sub database :Chained('object') :PathPart('database') :Args(0) {
+sub database :Chained('object') :PathPart('database') :Args(0) : AdminRole(CONFIGURATOR) {
     my ( $self, $c ) = @_;
 
     # Default username if nothing else have already been entered (provide a pre-filled field)
@@ -300,7 +300,7 @@ PacketFence minimal configuration (step 4)
 
 =cut
 
-sub configuration :Chained('object') :PathPart('configuration') :Args(0) {
+sub configuration :Chained('object') :PathPart('configuration') :Args(0) : AdminRole(CONFIGURATOR) {
     my ( $self, $c ) = @_;
 
     my $pf_model = $c->model('Config::Pf');
@@ -385,7 +385,7 @@ Administrator account (step 5)
 
 =cut
 
-sub admin :Chained('object') :PathPart('admin') :Args(0) {
+sub admin :Chained('object') :PathPart('admin') :Args(0) : AdminRole(CONFIGURATOR) {
     my ( $self, $c ) = @_;
 
     if ($c->request->method eq 'POST') {
@@ -419,7 +419,7 @@ Confirmation and services launch (step 6)
 
 =cut
 
-sub services :Chained('object') :PathPart('services') :Args(0) {
+sub services :Chained('object') :PathPart('services') :Args(0) : AdminRole(CONFIGURATOR) {
     my ( $self, $c ) = @_;
 
     if ($c->request->method eq 'GET') {
@@ -467,6 +467,7 @@ sub services :Chained('object') :PathPart('services') :Args(0) {
             my ($HTTP_CODE, $services) = $c->model('Services')->status;
             if( all { $_ ne '0' } values %{ $services->{services} } ) {
                 $c->model('Configurator')->update_currently_at();
+                $c->logout();
             }
             $c->controller('Service')->_process_model_results_as_json($c, $HTTP_CODE, $services);    
         }

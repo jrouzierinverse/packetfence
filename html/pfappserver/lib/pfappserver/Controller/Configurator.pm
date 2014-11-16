@@ -83,6 +83,10 @@ sub object :Chained('/') :PathPart('configurator') :CaptureArgs(0) {
     if ($c->stash->{installation_type} eq $pfappserver::Model::Configurator::CONFIGURATION) {
         my $admin_url = $c->uri_for($c->controller('Admin')->action_for('index'));
         $c->log->info("Redirecting to admin interface $admin_url");
+        #Logout the _PF_CONFIGURATOR user and delete their session
+        $c->logout();
+        $c->delete_session();
+        #Send them back to the admin page to log in
         $c->response->redirect($admin_url);
         $c->detach();
     }

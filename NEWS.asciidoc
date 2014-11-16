@@ -46,6 +46,8 @@ Bug Fixes
 * Fix previewing templates in the admin GUI
 * Fix bulk applying of roles and violations in the admin GUI
 * Fix importing of nodes when no pid is given
+* Fix previewing templates in the admin gui
+* Prevent a user getting admin access in the admin gui
 
 Version 4.5.1 released on 2014-11-10
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

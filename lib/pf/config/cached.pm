@@ -829,25 +829,6 @@ sub LockFileHasChanged {
     return $timestamp == -1 || $self->GetLockFileTimeStamp != $timestamp;
 }
 
-=head2 setControlFileTimestamp
-
-Stores the current timestamp of var/cache_control file
-
-=cut
-
-sub setControlFileTimestamp {
-    my ($self) = @_;
-    $self->{_control_file_timestamp} = getControlFileTimestamp();
-}
-
-sub getControlFileTimestamp { int((stat($cache_control_file))[9] || 0) * 1000000000 }
-
-sub controlFileExpired {
-    my ($timestamp) = @_;
-    $timestamp != getControlFileTimestamp();
-}
-
-
 =head2 cache
 
 Get the global CHI object for configfiles

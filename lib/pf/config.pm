@@ -541,7 +541,7 @@ sub readPfConfigFiles {
             ],
             -onpostreload => [ 'reload_pf_config' =>  sub {
                 my ($config) = @_;
-                $config->{imported}->ReadConfig();
+                $config->{imported}->ReloadConfig();
                 #clearing older interfaces infor
                 $monitor_int = $management_network = '';
                 @listen_ints = @dhcplistener_ints = @ha_ints =

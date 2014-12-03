@@ -283,7 +283,6 @@ use base qw(pf::IniFiles);
 
 our $CACHE;
 our @LOADED_CONFIGS_FILE;
-our @LOADED_CONFIGS;
 our %LOADED_CONFIGS;
 our %ON_RELOAD;
 our %ON_FILE_RELOAD;
@@ -710,7 +709,8 @@ sub ReloadConfig {
             $result = $self->ReadConfig();
             $reloaded_from_file = 1;
             return $self;
-        }
+        },
+        $force
     );
 
     $reloaded_from_cache = refaddr($self) != refaddr($new_self);
@@ -1084,7 +1084,8 @@ Unloads the cached config from the internal global cache
 sub unloadConfig {
     my ($self) = @_;
     my $file = $self->GetFileName;
-    @LOADED_CONFIGS = grep { $self->GetFileName ne $file  } @LOADED_CONFIGS;
+    @LOADED_CONFIGS_FILE = grep { $_ ne $file } @LOADED_CONFIGS_FILE;
+    delete $LOADED_CONFIGS{$file};
 }
 
 sub untaint_value {

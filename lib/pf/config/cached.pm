@@ -954,7 +954,7 @@ sub _addCallbacks {
     my ($self,$callback_array,@args) = @_;
     if (@args > 1) {
         my ($name,$callback) = splice(@args,0,2);
-        my $callback_data = first { $_->[0] eq $name  } @$callback_array;
+        my $callback_data = firstval { $_->[0] eq $name  } @$callback_array;
         #Adding a name to the anonymous function for debug and tracing purposes
         $callback = subname $name,$callback;
         if ($callback_data) {

@@ -25,6 +25,7 @@ use pf::util();
 use pf::node();
 use pf::locationlog();
 use pf::ipset();
+use Time::HiRes;
 
 sub event_add {
     my ($class, $date, $srcip, $type, $id) = @_;
@@ -56,12 +57,15 @@ sub radius_authorize {
 
     my $radius = new pf::radius::custom();
     my $return;
+    my $start = Time::HiRes::time();    
     eval {
         $return = $radius->authorize(\%radius_request);
     };
     if ($@) {
         $logger->error("radius authorize failed with error: $@");
     }
+    my $end = Time::HiRes::time();    
+    $logger->info("Timing: radius authorize took " . ($end - $start) . " amount of time" );
     return $return;
 }
 

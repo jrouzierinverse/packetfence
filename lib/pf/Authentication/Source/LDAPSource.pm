@@ -16,9 +16,11 @@ use Net::LDAP;
 use Net::LDAPS;
 use List::Util;
 use Net::LDAP::Util qw(escape_filter_value);
+use Time::HiRes;
 
 use Moose;
 extends 'pf::Authentication::Source';
+use pf::log;
 
 # available encryption
 use constant {
@@ -394,11 +396,14 @@ sub ldap_filter_for_conditions {
 sub bind_with_credentials {
     my ($self,$connection) = @_;
     my $result;
+    my $start = Time::HiRes::time(); 
     if ($self->{'binddn'} && $self->{'password'}) {
         $result = $connection->bind($self->{'binddn'}, password => $self->{'password'});
     } else {
         $result = $connection->bind;
     }
+    my $end = Time::HiRes::time(); 
+    get_logger->info("Timing: bind_with_credentials took " . ($end - $start) . " amount of time" );
     return $result;
 }
 

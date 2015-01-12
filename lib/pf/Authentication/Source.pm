@@ -13,6 +13,7 @@ We must at least always have one rule defined, the fallback one.
 use Moose;
 use pf::Authentication::constants;
 use pf::Authentication::Action;
+use Time::HiRes;
 
 has 'id' => (isa => 'Str', is => 'rw', required => 1);
 has 'unique' => (isa => 'Bool', is => 'ro', default => 0);
@@ -126,6 +127,7 @@ Returns the actions of the first matched rule.
 sub match {
     my ($self, $params) = @_;
 
+    my $start = Time::HiRes::time();
     my $common_attributes = $self->common_attributes();
     my $logger = Log::Log4perl->get_logger( __PACKAGE__ );
 
@@ -179,6 +181,8 @@ sub match {
         }
 
     } # foreach my $rule ( @{$self->{'rules'}} ) {
+    my $end = Time::HiRes::time();
+    $logger->info("Timing: match took " . ($end - $start) . " amount of time" );
 
     return undef;
 }

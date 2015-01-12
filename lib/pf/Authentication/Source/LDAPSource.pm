@@ -69,7 +69,10 @@ sub authenticate {
   my ( $self, $username, $password ) = @_;
   my $logger = Log::Log4perl->get_logger(__PACKAGE__);
 
+  my $start = Time::HiRes::time(); 
   my ($connection, $LDAPServer, $LDAPServerPort ) = $self->_connect();
+  my $end = Time::HiRes::time(); 
+  $logger->info("Timing: _connect took " . ($end - $start) . " amount of time" );
 
   if (!defined($connection)) {
     return ($FALSE, 'Unable to validate credentials at the moment');

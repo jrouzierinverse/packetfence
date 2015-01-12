@@ -168,7 +168,10 @@ sub authorize {
     }
 
     # Fetch VLAN depending on node status
+    my $start = Time::HiRes::time();    
     my ($vlan, $wasInline, $user_role) = $vlan_obj->fetchVlanForNode($mac, $switch, $port, $connection_type, $user_name, $ssid, $radius_request);
+    my $end = Time::HiRes::time();    
+    $logger->info("Timing: fetchVlanForNode took " . ($end - $start) . " amount of time" );
 
     # should this node be kicked out?
     if (defined($vlan) && $vlan == -1) {

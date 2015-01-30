@@ -158,37 +158,8 @@ sub readAuthenticationConfigFile {
 
                     # Parse rules
                     foreach my $rule_id ( $config->GroupMembers($source_id) ) {
-
                         my ($id) = $rule_id =~ m/$source_id rule (\S+)$/;
-                        my $current_rule = pf::Authentication::Rule->new({match => $Rules::ANY, id => $id});
-
-                        foreach my $parameter ( $config->Parameters($rule_id) ) {
-                            if ($parameter =~ m/condition(\d+)/) {
-                                #print "Condition $1: " . $config->val($rule, $parameter) . "\n";
-                                my ($attribute, $operator, $value) = split(',', $config->val($rule_id, $parameter), 3);
-
-                                $current_rule->add_condition( pf::Authentication::Condition->new({attribute => $attribute,
-                                                                                                  operator => $operator,
-                                                                                                  value => $value}) );
-                            } elsif ($parameter =~ m/action(\d+)/) {
-                                #print "Action: $1" . $config->val($rule_id, $parameter) . "\n";
-                                my ($type, $value) = split('=', $config->val($rule_id, $parameter), 2);
-
-                                if (defined $value) {
-                                    $current_rule->add_action( pf::Authentication::Action->new({type => $type,
-                                                                                                value => $value}) );
-                                } else {
-                                    $current_rule->add_action( pf::Authentication::Action->new({type => $type}) );
-                                }
-
-                            } elsif ($parameter =~ m/match/) {
-                                $current_rule->{'match'} = $config->val($rule_id, $parameter);
-                            } elsif ($parameter =~ m/description/) {
-                                $current_rule->{'description'} = $config->val($rule_id, $parameter);
-                            }
-                        }
-
-                        $current_source->add_rule($current_rule);
+                        $current_source->add_rule( pf::Authentication::Rule->new({id => $id, %{$cfg{$rule_id}}}));
                     }
                     push(@authentication_sources, $current_source);
                     $authentication_lookup{$source_id} = $current_source;

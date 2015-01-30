@@ -11,12 +11,63 @@ pf::Authentication::Rule
 use Moose;
 
 use pf::Authentication::constants;
+use pf::Authentication::Condition;
+use pf::Authentication::Action;
 
 has 'id' => (isa => 'Str', is => 'rw', required => 1);
 has 'description' => (isa => 'Str', is => 'rw', required => 0);
 has 'match' => (isa => 'Maybe[Str]', is => 'rw', default => $Rules::ANY);
+has 'type' => (isa => 'Maybe[Str]', is => 'rw', default => $Rules::ANY);
 has 'actions' => (isa => 'ArrayRef', is => 'rw', required => 0);
 has 'conditions' => (isa => 'ArrayRef', is => 'rw', required => 0);
+
+=head2 BUILDARGS
+
+Massage the condition and action parameters before passing it to the constructor
+
+=cut
+
+sub BUILDARGS {
+    my ($self, @args) = @_;
+    my %original_args;
+    #If there is more than one parameter assume it is a hash
+    if (@args > 1 ) {
+        %original_args = @args;
+    } else {
+        %original_args = %{$args[0]};
+    }
+    my (%newsargs, @conditions, @actions);
+    while (my ($key, $val) = each %original_args) {
+        if ($key =~ m/condition(\d+)/) {
+            #print "Condition $1: " . $config->val($rule, $parameter) . "\n";
+            my ($attribute, $operator, $value) = split(',', $val, 3);
+            push @conditions,
+              pf::Authentication::Condition->new(
+                {   attribute => $attribute,
+                    operator  => $operator,
+                    value     => $value
+                }
+              );
+        }
+        elsif ($key =~ m/action(\d+)/) {
+
+            #print "Action: $1" . $config->val($rule_id, $parameter) . "\n";
+            my ($type, $value) = split('=', $val);
+            push @actions,
+              pf::Authentication::Action->new(
+                {   type  => $type,
+                    value => $value
+                }
+              );
+        }
+        else {
+            $newsargs{$key} = $val;
+        }
+    }
+    $newsargs{actions}    = \@actions;
+    $newsargs{conditions} = \@conditions;
+    return \%newsargs;
+}
 
 sub add_action {
   my ($self, $action) = @_;

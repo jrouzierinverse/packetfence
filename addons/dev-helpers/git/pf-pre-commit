@@ -1,0 +1,18 @@
+#!/bin/bash
+
+
+# How to setup git pre commit script
+# cp this file to $HOME/bin/
+# chmod 755 $HOME/bin/pf-pre-commit
+# ln -s /usr/local/pf/.git/hook/pre-commit $HOME/bin/pf-pre-commit
+
+PF_DIR=/usr/local/pf
+
+PF_PRE_COMMIT_STATUS=0
+
+if [ -e addons/dev-helpers/git/pre-commit.pl ];then
+    addons/dev-helpers/git/pre-commit.pl
+    PF_PRE_COMMIT_STATUS=$?
+fi
+
+exit $PF_PRE_COMMIT_STATUS

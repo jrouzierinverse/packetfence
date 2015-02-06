@@ -55,14 +55,14 @@ our %VALID_PARAMS =
 
 =head2 auto
 
-Allow only authenticated users
+Allow only authenticated users except from the configurator realm
 
 =cut
 
 sub auto :Private {
     my ($self, $c) = @_;
 
-    unless ($c->user_in_realm('admin')) {
+    if (!$c->user_exists || $c->user_in_realm('configurator') ) {
         $c->response->status(HTTP_UNAUTHORIZED);
         $c->response->location($c->req->referer);
         $c->stash->{template} = 'admin/unauthorized.tt';

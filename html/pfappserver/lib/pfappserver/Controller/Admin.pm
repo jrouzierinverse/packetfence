@@ -1,7 +1,4 @@
 package pfappserver::Controller::Admin;
-use Moose;
-
-BEGIN { extends 'pfappserver::PacketFence::Controller::Admin'; }
 
 =head1 NAME
 
@@ -10,6 +7,44 @@ pfappserver::Controller::Admin - The customizable
 =head1 DESCRIPTION
 
 =cut
+
+use Moose;
+use pfappserver::Authentication::Store::PacketFence::User;
+
+BEGIN { extends 'pfappserver::PacketFence::Controller::Admin'; }
+
+=head1 METHODS
+
+=head2 auto
+
+Allow only authenticated users
+
+=cut
+
+sub auto :Private {
+    my ($self, $c, @args) = @_;
+
+    # Make sure the 'enforcements' session variable doesn't exist as it affects the Interface controller
+    delete $c->session->{'enforcements'};
+    #The configurator user is not allowed to access the admin admin
+    if($c->user_in_realm('configurator')) {
+        $c->logout( );
+        $c->delete_session();
+    }
+
+    unless ($c->action->name eq 'login' || $c->action->name eq 'logout' || $c->user_exists || $c->authenticate({}, 'proxy') ) {
+        $c->stash->{'template'} = 'admin/login.tt';
+        unless ($c->action->name eq 'index') {
+            $c->stash->{status_msg} = $c->loc("Your session has expired.");
+            $c->stash->{'redirect_action'} = $c->uri_for($c->action, @args);
+        }
+        $c->delete_session();
+        $c->detach();
+        return 0;
+    }
+
+    return 1;
+}
 
 =head1 AUTHOR
 

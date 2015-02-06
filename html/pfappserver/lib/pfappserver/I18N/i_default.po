@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 4.6.0\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2015-02-04 10:40-0400\n"
+"PO-Revision-Date: 2015-02-06 13:28-0400\n"
 "Last-Translator: Inverse inc. <info@inverse.ca>\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -5933,6 +5933,10 @@ msgstr "pending"
 # pf::filter (Portal Profile Filters)
 msgid "pf::profile::filter::connection_type"
 msgstr "Connection Type"
+
+# pf::filter (Portal Profile Filters)
+msgid "pf::profile::filter::day_of_week"
+msgstr "Day Of Week"
 
 # pf::filter (Portal Profile Filters)
 msgid "pf::profile::filter::network"

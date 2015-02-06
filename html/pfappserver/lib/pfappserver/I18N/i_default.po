@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 4.6.0\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2015-02-04 10:40-0400\n"
+"PO-Revision-Date: 2015-02-06 11:06-0400\n"
 "Last-Translator: Inverse inc. <info@inverse.ca>\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -4409,7 +4409,6 @@ msgstr ""
 msgid "Under most circumstances we can redirect the user to the URL he originally intended to visit. However, you may prefer to force the captive portal to redirect the user to the redirection URL."
 msgstr ""
 
-# html/pfappserver/lib/pfappserver/Controller/Admin.pm
 # html/pfappserver/lib/pfappserver/Controller/Config/Authentication/Source.pm
 msgid "Unexpected error. See server-side logs for details."
 msgstr ""
@@ -4786,20 +4785,8 @@ msgstr ""
 msgid "Without condition, this rule will act as a catch-all."
 msgstr ""
 
-# html/pfappserver/lib/pfappserver/Controller/Admin.pm
-msgid "Wrong username or password."
-msgstr ""
-
 # html/pfappserver/lib/pfappserver/Form/Config/Realm.pm
 msgid "You can add options in the realm definition"
-msgstr ""
-
-# html/pfappserver/lib/pfappserver/Controller/Admin.pm
-msgid "You don't have the rights to perform this action."
-msgstr ""
-
-# html/pfappserver/lib/pfappserver/Controller/Admin.pm
-msgid "You have been logged out."
 msgstr ""
 
 # html/pfappserver/root/configurator/services.tt
@@ -5457,6 +5444,10 @@ msgstr ""
 # conf/documentation.conf (advanced.pfcmd_success_color options)
 # conf/documentation.conf (advanced.pfcmd_warning_color options)
 msgid "green"
+msgstr ""
+
+# pf::Authentication::Source::AdminProxySource (available_attributes)
+msgid "group_header"
 msgstr ""
 
 # conf/documentation.conf

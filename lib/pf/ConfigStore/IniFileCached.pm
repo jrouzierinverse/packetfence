@@ -511,7 +511,7 @@ store hash
 
 sub storeIntoCache {
     my ($self,$hash) = @_;
-    my $txn = $pf::LMDB::Config::ENV->BeginTxn();
+    my $txn = $pf::LMDB::Config::LMDB_ENV->BeginTxn();
 
     unless($txn) {
         #Log some error here

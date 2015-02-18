@@ -23,15 +23,13 @@ my $DECODER = Sereal::Decoder->new;
 
 our $LAST_TXN_ID = 0;
 
-our $TXN;
-our $ENV;
+our $LMDB_ENV;
 
 openEnv();
-#setupReadTXN();
 
 sub openEnv {
-    unless (defined $ENV) {
-        $ENV = LMDB::Env->new(
+    unless (defined $LMDB_ENV) {
+        $LMDB_ENV = LMDB::Env->new(
             "/usr/local/pf/var/cache",
             {   mapsize    => 200 * 1024 * 1024,    # Plenty space, don't worry
                 maxdbs     => 20,                   # Some databases
@@ -44,14 +42,8 @@ sub openEnv {
     }
 }
 
-sub setupReadTXN {
-    unless(defined $TXN) {
-        openEnv();
-        #Setup readonly transaction
-        $TXN = LMDB::Txn->new($ENV, MDB_RDONLY);
-        #Reset for later use
-        $TXN->reset();
-    }
+sub closeEnv {
+    $LMDB_ENV = undef;
 }
 
 sub getFromDb {
@@ -131,9 +123,7 @@ sub updateValueInCacheFromDb {
 }
 
 END {
-    $TXN->abort if $TXN;
-    $TXN = undef;
-    $ENV = undef;
+    $LMDB_ENV = undef;
 }
 
 =head1 AUTHOR

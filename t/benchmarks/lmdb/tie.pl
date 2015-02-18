@@ -34,8 +34,8 @@ timethese(
         'direct' => sub {
             my $key = $keys[int(rand($key_length))];
             my $switch;
-            my $txn = $pf::LMDB::Config::ENV->BeginTxn(MDB_RDONLY);
-            my $db  = $txn->OpenDB('switches.conf');
+            my $txn = $pf::LMDB::Config::LMDB_ENV->BeginTxn(MDB_RDONLY);
+            my $db  = $txn->OpenDB('Config::Switch');
             $db->ReadMode(1);
             $db->get($key, my $sereal_data);
             if( $LMDB_File::last_err == MDB_SUCCESS ) {

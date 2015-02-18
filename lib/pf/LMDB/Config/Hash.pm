@@ -47,7 +47,7 @@ sub FETCH {
     my ($self,$key) = @_;
     my ($txn,$db,$cursor) = @{$self->{_cursor} || []};
     unless($txn) {
-        $txn = $pf::LMDB::Config::ENV->BeginTxn(MDB_RDONLY);
+        $txn = $pf::LMDB::Config::LMDB_ENV->BeginTxn(MDB_RDONLY);
         $db = $txn->OpenDB($self->dbName);
         $db->ReadMode(1);
     }
@@ -59,7 +59,7 @@ sub FETCH {
 
 sub FIRSTKEY {
     my ($self) = @_;
-    my $txn = $pf::LMDB::Config::ENV->BeginTxn(MDB_RDONLY);
+    my $txn = $pf::LMDB::Config::LMDB_ENV->BeginTxn(MDB_RDONLY);
     my $db = $txn->OpenDB($self->dbName);
     my $cursor = $db->Cursor;
     $cursor->get( my $key, my $sereal_data, MDB_FIRST);
@@ -84,7 +84,7 @@ sub NEXTKEY {
 
 sub EXISTS {
     my ($self,$key) = @_;
-    my $txn = $pf::LMDB::Config::ENV->BeginTxn(MDB_RDONLY);
+    my $txn = $pf::LMDB::Config::LMDB_ENV->BeginTxn(MDB_RDONLY);
     my $db = $txn->OpenDB($self->dbName);
     $db->ReadMode(1);
     $db->get($key, my $sereal_data);

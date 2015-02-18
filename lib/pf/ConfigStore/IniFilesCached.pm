@@ -1,14 +1,14 @@
-package pf::ConfigStore::IniFileCached;
+package pf::ConfigStore::IniFilesCached;
 
 =head1 NAME
 
-pf::ConfigStore::IniFileCached
+pf::ConfigStore::IniFilesCached
 
 =cut
 
 =head1 DESCRIPTION
 
-pf::ConfigStore::IniFileCached
+pf::ConfigStore::IniFilesCached
 
 Is the Base class for using
 

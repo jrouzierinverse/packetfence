@@ -1,14 +1,14 @@
-package pf::ConfigStore::IniFileCached::Switch;
+package pf::ConfigStore::IniFilesCached::Switch;
 
 =head1 NAME
 
-pf::ConfigStore::IniFileCached::Switch add documentation
+pf::ConfigStore::IniFilesCached::Switch add documentation
 
 =cut
 
 =head1 DESCRIPTION
 
-pf::ConfigStore::IniFileCached::Switch;
+pf::ConfigStore::IniFilesCached::Switch;
 
 =cut
 
@@ -20,7 +20,7 @@ use pf::util;
 use HTTP::Status qw(:constants is_error is_success);
 use List::MoreUtils qw(part);
 
-extends qw(pf::ConfigStore::IniFileCached Exporter);
+extends qw(pf::ConfigStore::IniFilesCached Exporter);
 
 our ( $switches_cached_config, %SwitchConfig );
 our @EXPORT = qw(%SwitchConfig);

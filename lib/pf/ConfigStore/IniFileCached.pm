@@ -422,9 +422,7 @@ sub search {
 sub populateCache {
     my ($self) = @_;
     my %hash;
-    print "populateHash\n";
     $self->populateHash(\%hash);
-    print "storeIntoCache\n";
     $self->storeIntoCache(\%hash);
 }
 

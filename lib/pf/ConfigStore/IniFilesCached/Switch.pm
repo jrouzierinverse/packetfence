@@ -32,9 +32,8 @@ has '+default_section' => (default => sub { "default" }, coerce => sub { "defaul
 has 'storeNameSpace' => ( is => 'rw', default => sub { 'Config::Switch' } );
 
 
-sub populateHash {
+sub prepareHashForStorage {
     my ( $self, $hash ) = @_;
-    $self->SUPER::populateHash($hash);
     foreach my $switch ( values %$hash ) {
 
         # transforming uplink and inlineTrigger to arrays

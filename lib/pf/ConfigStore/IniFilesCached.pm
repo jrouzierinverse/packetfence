@@ -437,6 +437,18 @@ sub populateHash {
     my $inifileConfig = $self->inifileConfig;
     $self->toHash($inifileConfig, $hash);
     $self->cleanupWhitespace($hash);
+    $self->prepareHashForStorage($hash);
+}
+
+=head2 prepareHashForStorage
+
+prepares/messages the data in hash before it is stored
+
+=cut
+
+sub prepareHashForStorage {
+    my ($self,$hash) = @_;
+    return ;
 }
 
 =head2 toHash

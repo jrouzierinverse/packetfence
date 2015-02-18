@@ -54,33 +54,6 @@ sub setupReadTXN {
     }
 }
 
-
-sub validId { 1; }
-sub validParam { 1; }
-sub rollback {}
-sub rewriteConfig { }
-sub readAllIds { }
-sub readAll { }
-sub _Sections { }
-sub hasId { }
-sub _formatId { return $_[1]; }
-sub read { }
-sub update { }
-sub _update_section { }
-sub create { }
-sub update_or_create { }
-sub remove { }
-sub copy { }
-sub renameItem { }
-sub sortItems { }
-sub cleanupAfterRead { }
-sub cleanupBeforeCommit { }
-sub expand_list { }
-sub split_list { }
-sub join_list { }
-sub flatten_list { }
-sub commit { }
-sub search { }
 sub getFromDb {
     my ($txn, $dbname, $key) = @_;
     my $db = $txn->OpenDB($dbname);

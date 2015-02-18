@@ -16,7 +16,6 @@ use warnings;
 use lib qw(/usr/local/pf/lib);
 use LMDB_File qw(MDB_CREATE MDB_RDONLY MDB_NEXT MDB_FIRST);
 use Sereal::Decoder qw(sereal_decode_with_object sereal_decode_with_header_with_object);
-use DDP;
 use Time::HiRes qw(sleep);
 
 my $decoder = Sereal::Decoder->new;

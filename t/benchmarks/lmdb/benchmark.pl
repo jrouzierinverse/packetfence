@@ -18,7 +18,6 @@ use lib qw(/usr/local/pf/lib);
 use LMDB_File qw(MDB_CREATE MDB_RDONLY MDB_NEXT MDB_FIRST MDB_NOTLS);
 use Sereal::Decoder qw(sereal_decode_with_object sereal_decode_with_header_with_object);
 use Sereal::Encoder qw(encode_sereal);
-use DDP;
 use Benchmark qw(:all :hireswallclock);
 use pf::ConfigStore::Switch;
 use Tie::Hash;

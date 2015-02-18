@@ -20,12 +20,12 @@ use pf::LMDB::Config::Hash;
 use Benchmark qw(:all);
 use LMDB_File qw(:all);
 use Sereal::Decoder qw(sereal_decode_with_object sereal_decode_with_header_with_object);
-use DDP;
 my $DECODER = Sereal::Decoder->new;
 
 tie our %SwitchConfig, 'pf::LMDB::Config::Hash' => {dbName => 'Config::Switch'};
 my @keys = keys %SwitchConfig;
 my $key_length = @keys;
+
 
 timethese(
     -5,

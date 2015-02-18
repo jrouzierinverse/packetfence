@@ -46,6 +46,8 @@ has configFile => ( is => 'ro');
 
 has default_section => ( is => 'ro');
 
+has storeNameSpace => ( is => 'ro', required => 1);
+
 
 =head1 METHODS
 

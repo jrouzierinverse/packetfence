@@ -14,23 +14,23 @@ pf::ConfigStore::IniFilesCached::Switch;
 
 use Moo;
 use namespace::autoclean;
-use pf::log;
 use pf::file_paths;
 use pf::util;
-use HTTP::Status qw(:constants is_error is_success);
 use List::MoreUtils qw(part);
 
-extends qw(pf::ConfigStore::IniFilesCached Exporter);
+extends qw(pf::ConfigStore::IniFilesCached);
 
-our ( $switches_cached_config, %SwitchConfig );
-our @EXPORT = qw(%SwitchConfig);
 use pf::freeradius;
-
 
 has '+configFile' => (default => sub {$switches_config_file}, coerce => sub {$switches_config_file});
 has '+default_section' => (default => sub { "default" }, coerce => sub { "default" });
-has 'storeNameSpace' => ( is => 'rw', default => sub { 'Config::Switch' } );
+has '+storeNameSpace' => ( default => sub { 'Config::Switch' }, coerce => sub { 'Config::Switch' } );
 
+=head1 METHODS
+
+=head2 prepareHashForStorage
+
+=cut
 
 sub prepareHashForStorage {
     my ( $self, $hash ) = @_;

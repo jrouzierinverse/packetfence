@@ -23,7 +23,7 @@ use Sereal::Decoder qw(sereal_decode_with_object sereal_decode_with_header_with_
 use DDP;
 my $DECODER = Sereal::Decoder->new;
 
-tie our %SwitchConfig, 'pf::LMDB::Config::Hash' => {dbName => 'switches.conf'};
+tie our %SwitchConfig, 'pf::LMDB::Config::Hash' => {dbName => 'Config::Switch'};
 my @keys = keys %SwitchConfig;
 my $key_length = @keys;
 

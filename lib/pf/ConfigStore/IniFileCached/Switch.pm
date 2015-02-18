@@ -29,7 +29,7 @@ use pf::freeradius;
 
 has '+configFile' => (default => sub {$switches_config_file}, coerce => sub {$switches_config_file});
 has '+default_section' => (default => sub { "default" }, coerce => sub { "default" });
-has 'storeNameSpace' => ( is => 'rw', default => sub { 'switches.conf' } );
+has 'storeNameSpace' => ( is => 'rw', default => sub { 'Config::Switch' } );
 
 
 sub populateHash {

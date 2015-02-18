@@ -15,14 +15,15 @@ tie
 use strict;
 use warnings;
 use lib qw(/usr/local/pf/lib);
-use pf::ConfigStore::LMDB::Hash;
+use pf::LMDB::Config;
+use pf::LMDB::Config::Hash;
 use Benchmark qw(:all);
 use LMDB_File qw(:all);
 use Sereal::Decoder qw(sereal_decode_with_object sereal_decode_with_header_with_object);
 use DDP;
 my $DECODER = Sereal::Decoder->new;
 
-tie our %SwitchConfig, 'pf::ConfigStore::LMDB::Hash' => {dbName => 'switches.conf'};
+tie our %SwitchConfig, 'pf::LMDB::Config::Hash' => {dbName => 'switches.conf'};
 my @keys = keys %SwitchConfig;
 my $key_length = @keys;
 
@@ -33,7 +34,7 @@ timethese(
         'direct' => sub {
             my $key = $keys[int(rand($key_length))];
             my $switch;
-            my $txn = $pf::ConfigStore::LMDB::ENV->BeginTxn(MDB_RDONLY);
+            my $txn = $pf::LMDB::Config::ENV->BeginTxn(MDB_RDONLY);
             my $db  = $txn->OpenDB('switches.conf');
             $db->ReadMode(1);
             $db->get($key, my $sereal_data);

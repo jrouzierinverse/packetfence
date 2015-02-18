@@ -1,13 +1,13 @@
-package pf::ConfigStore::LMDB::Hash;
+package pf::LMDB::Config::Hash;
 =head1 NAME
 
-pf::ConfigStore::LMDB::Hash add documentation
+pf::LMDB::Config::Hash add documentation
 
 =cut
 
 =head1 DESCRIPTION
 
-pf::ConfigStore::LMDB::Hash
+pf::LMDB::Config::Hash
 
 =cut
 
@@ -16,10 +16,8 @@ use warnings;
 use Tie::Hash;
 use Moo;
 use LMDB_File qw(MDB_RDONLY MDB_FIRST MDB_NEXT MDB_SUCCESS);
-use pf::ConfigStore::LMDB;
+use pf::LMDB::Config;
 use Sereal::Decoder qw(sereal_decode_with_object sereal_decode_with_header_with_object);
-
-my $DECODER = Sereal::Decoder->new;
 
 has dbName => ( is => 'ro', required => 1);
 
@@ -49,23 +47,23 @@ sub FETCH {
     my ($self,$key) = @_;
     my ($txn,$db,$cursor) = @{$self->{_cursor} || []};
     unless($txn) {
-        $txn = $pf::ConfigStore::LMDB::ENV->BeginTxn(MDB_RDONLY);
+        $txn = $pf::LMDB::Config::ENV->BeginTxn(MDB_RDONLY);
         $db = $txn->OpenDB($self->dbName);
         $db->ReadMode(1);
     }
     $db->get($key, my $sereal_data);
-    return if $LMDB_File::last_err;
-    sereal_decode_with_header_with_object($DECODER, $sereal_data, my $value, my $header);
+    return if $LMDB_File::last_err != MDB_SUCCESS;
+    sereal_decode_with_header_with_object($pf::LMDB::Config::DECODER, $sereal_data, my $value, my $header);
     return $value;
 }
 
 sub FIRSTKEY {
     my ($self) = @_;
-    my $txn = $pf::ConfigStore::LMDB::ENV->BeginTxn(MDB_RDONLY);
+    my $txn = $pf::LMDB::Config::ENV->BeginTxn(MDB_RDONLY);
     my $db = $txn->OpenDB($self->dbName);
     my $cursor = $db->Cursor;
     $cursor->get( my $key, my $sereal_data, MDB_FIRST);
-    return if $LMDB_File::last_err;
+    return if $LMDB_File::last_err != MDB_SUCCESS;
     $self->{_cursor} = [$txn,$db,$cursor];
     return $key;
 }
@@ -86,13 +84,13 @@ sub NEXTKEY {
 
 sub EXISTS {
     my ($self,$key) = @_;
-    my $txn = $pf::ConfigStore::LMDB::ENV->BeginTxn(MDB_RDONLY);
+    my $txn = $pf::LMDB::Config::ENV->BeginTxn(MDB_RDONLY);
     my $db = $txn->OpenDB($self->dbName);
     $db->ReadMode(1);
     $db->get($key, my $sereal_data);
     $db = undef;
     $txn = undef;
-    return $LMDB_File::last_err == 0;
+    return $LMDB_File::last_err == MDB_SUCCESS;
 }
 
 =head1 AUTHOR

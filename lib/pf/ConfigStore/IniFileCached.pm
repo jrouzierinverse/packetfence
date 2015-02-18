@@ -19,8 +19,8 @@ use namespace::autoclean;
 use pf::IniFiles;
 use Log::Log4perl qw(get_logger);
 use List::MoreUtils qw(uniq);
-use pf::ConfigStore::LMDB;
-use LMDB_File qw(MDB_CREATE);
+use pf::LMDB::Config;
+use LMDB_File qw(MDB_CREATE MDB_SUCCESS);
 use Sereal::Encoder qw(sereal_encode_with_object);
 use Scalar::Util qw(refaddr reftype tainted blessed);
 use List::MoreUtils qw(any firstval uniq);
@@ -507,36 +507,31 @@ sub cleanupWhitespace {
 
 =head2 storeIntoCache
 
-TODO: documention
+store hash
 
 =cut
 
 sub storeIntoCache {
     my ($self,$hash) = @_;
-    my $txn = $pf::ConfigStore::LMDB::ENV->BeginTxn();
+    my $txn = $pf::LMDB::Config::ENV->BeginTxn();
 
     unless($txn) {
         #Log some error here
-        print "Cannot get txn\n";
         return;
     }
-    print "Got txn\n";
     my $db = $txn->OpenDB($self->storeNameSpace,MDB_CREATE);
     unless($db) {
         #Log some error here
-        print "Cannot get db\n";
         return;
     }
-    print "Got db\n";
     $db->drop;
-#    $db = $txn->OpenDB($self->storeNameSpace,MDB_CREATE);
     my $txn_id = $txn->id;
     while ( my ($key,$value) = each %$hash) {
        my $data = sereal_encode_with_object($ENCODER,$value,$txn_id);
        $db->put($key,$data);
     }
     $txn->commit();
-    return 1;
+    return $LMDB_File::last_err == MDB_SUCCESS;
 }
 
 __PACKAGE__->meta->make_immutable;

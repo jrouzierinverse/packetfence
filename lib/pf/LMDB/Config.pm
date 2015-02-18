@@ -1,13 +1,13 @@
-package pf::ConfigStore::LMDB;
+package pf::LMDB::Config;
 =head1 NAME
 
-pf::ConfigStore::LMDB add documentation
+pf::LMDB::Config add documentation
 
 =cut
 
 =head1 DESCRIPTION
 
-pf::ConfigStore::LMDB
+pf::LMDB::Config
 
 =cut
 

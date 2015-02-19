@@ -19,9 +19,7 @@ use Data::Swap;
 use Moo;
 $LMDB_File::die_on_err = 0;
 
-my $DECODER = Sereal::Decoder->new;
-
-our $LAST_TXN_ID = 0;
+our $DECODER = Sereal::Decoder->new;
 
 our $LMDB_ENV;
 

@@ -524,25 +524,33 @@ store hash
 =cut
 
 sub storeIntoCache {
-    my ($self,$hash) = @_;
+    my ($self, $hash) = @_;
     my $txn = $pf::LMDB::Config::LMDB_ENV->BeginTxn();
-
-    unless($txn) {
+    unless ($LMDB_File::last_err == MDB_SUCCESS) {
         #Log some error here
         return;
     }
-    my $db = $txn->OpenDB($self->storeNameSpace,MDB_CREATE);
-    unless($db) {
+    my $dbi = $txn->open($self->storeNameSpace, MDB_CREATE);
+    unless ($LMDB_File::last_err == MDB_SUCCESS) {
         #Log some error here
         return;
     }
-    $db->drop;
+    #Calling the direct drop method to avoid using the oo interface
+    LMDB_File::_drop($txn, $dbi, 0);
     my $txn_id = $txn->id;
-    while ( my ($key,$value) = each %$hash) {
-       my $data = sereal_encode_with_object($ENCODER,$value,$txn_id);
-       $db->put($key,$data);
+    while (my ($key, $value) = each %$hash) {
+        #Saving the transaction id into the sereal header along side the data
+        my $data = sereal_encode_with_object($ENCODER, $value, $txn_id);
+        $txn->put($dbi, $key, $data);
+        last unless $LMDB_File::last_err == MDB_SUCCESS;
     }
-    $txn->commit();
+    if ($LMDB_File::last_err == MDB_SUCCESS) {
+        $txn->commit();
+    }
+    else {
+        #Add sone logging
+        $txn->abort();
+    }
     return $LMDB_File::last_err == MDB_SUCCESS;
 }
 

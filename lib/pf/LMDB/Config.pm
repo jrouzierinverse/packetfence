@@ -13,7 +13,7 @@ pf::LMDB::Config
 
 use strict;
 use warnings;
-use LMDB_File qw(MDB_RDONLY MDB_NOTLS);
+use LMDB_File qw(MDB_RDONLY MDB_NOTLS MDB_NOMEMINIT);
 use Sereal::Decoder;
 use Data::Swap;
 use Moo;
@@ -30,11 +30,12 @@ sub openEnv {
         $LMDB_ENV = LMDB::Env->new(
             "/usr/local/pf/var/cache",
             {   mapsize    => 25 * 1024 * 1024,    # Plenty space, don't worry
-                maxdbs     => 20,                   # Some databases
+                maxdbs     => 20,                  # Some databases should be determined at run time
                 mode       => 0660,
-                flags      => MDB_NOTLS,
+                #Do not initialize memory before using it
+                #Store lock data in the txn itself instead of the thread tls
+                flags      => MDB_NOTLS | MDB_NOMEMINIT,
                 maxreaders => 1022,
-                # More options
             }
         );
     }

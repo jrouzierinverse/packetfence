@@ -29,7 +29,7 @@ sub openEnv {
     unless (defined $LMDB_ENV) {
         $LMDB_ENV = LMDB::Env->new(
             "/usr/local/pf/var/cache",
-            {   mapsize    => 200 * 1024 * 1024,    # Plenty space, don't worry
+            {   mapsize    => 25 * 1024 * 1024,    # Plenty space, don't worry
                 maxdbs     => 20,                   # Some databases
                 mode       => 0660,
                 flags      => MDB_NOTLS,
@@ -42,6 +42,17 @@ sub openEnv {
 
 sub closeEnv {
     $LMDB_ENV = undef;
+}
+
+=head2 resetEnv
+
+closes and reopen the global env
+
+=cut
+
+sub resetEnv {
+    closeEnv();
+    openEnv();
 }
 
 sub getFromDb {

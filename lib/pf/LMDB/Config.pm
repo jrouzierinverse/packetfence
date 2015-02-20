@@ -38,6 +38,7 @@ sub openEnv {
                 maxreaders => 1022,
             }
         );
+        die unless defined $LMDB_ENV;
     }
 }
 
@@ -54,82 +55,6 @@ closes and reopen the global env
 sub resetEnv {
     closeEnv();
     openEnv();
-}
-
-sub getFromDb {
-    my ($txn, $dbname, $key) = @_;
-    my $db = $txn->OpenDB($dbname);
-    $db->ReadMode(1);
-    $db->get($key, my $sereal_data);
-    if ($sereal_data) {
-        Sereal::Decoder::sereal_decode_with_object($DECODER, $sereal_data, my $value);
-        return $value;
-    }
-    return;
-}
-
-sub updateHashFromDb {
-    my ($txn,$dbname,$key,$hashref) = @_;
-    my $last_txn_id = $hashref->{__last_txn_id} || 0;
-    my $txn_id = $txn->id;
-    if ($last_txn_id != $txn_id) {
-        my $db = $txn->OpenDB($dbname);
-        $db->ReadMode(1);
-        $db->get($key, my $sereal_data);
-        if ($sereal_data) {
-            my $version = Sereal::Decoder::sereal_decode_only_header_with_object($DECODER, $sereal_data);
-            if ($version != $hashref->{__version}) {
-                Sereal::Decoder::sereal_decode_with_object($DECODER, $sereal_data, my $value);
-                Data::Swap::swap($hashref, $value);
-                undef $value;
-            }
-            $hashref->{__last_txn_id} = $txn_id;
-        }
-    }
-}
-
-=head2 updateValueInCacheFromDb
-
-Updates the entry in the in memory hash if the value was changed
-
-=cut
-
-sub updateValueInCacheFromDb {
-    my ($txn, $dbname, $key, $cachehash) = @_;
-    my $sereal_data;
-    my $txn_id = $txn->id;
-    if (exists $cachehash->{$key}) {
-        my $value = $cachehash->{$key};
-        #Check if the transaction has since last time
-        if ($value->{__last_txn_id} != $txn_id) {
-            my $db = $txn->OpenDB($dbname);
-
-            $db->get($key, my $data);
-            if ($data) {
-                #Get the version of the data from the sereal header
-                my $version = Sereal::Decoder::sereal_decode_only_header_with_object($DECODER, $data);
-                #If the version does not match then update the hash
-                if ($value->{__version} != $version) {
-                    Sereal::Decoder::sereal_decode_with_object($DECODER, $sereal_data, my $new_value);
-                    #Swap the contents of the hash
-                    Data::Swap::swap($value, $new_value);
-                }
-                #Update the last txn id so we do not need to check this entry again for the same transaction
-                $value->{__last_txn_id} = $txn_id;
-            } else {
-                delete $cachehash->{$key};
-            }
-        }
-    }
-    else {
-        my $db = $txn->OpenDB($dbname);
-        $db->get($key, my $data);
-        if ($data) {
-            Sereal::Decoder::sereal_decode_with_object($DECODER, $data, my $value);
-            $value->{__last_txn_id} = $txn_id;
-            $cachehash->{$key} = $value;
-        }
-    }
 }
 
 END {

@@ -124,7 +124,7 @@ sub fetchVlanForNode {
         $logger->warn("[$mac] Resolved VLAN for node is not properly defined: Replacing with macDetectionVlan");
         $vlan = $switch->getVlanByName('macDetection');
     }
-    $logger->info("[$mac] PID: \"" .$node_info->{pid}. "\", Status: " .$node_info->{status}. ". Returned VLAN: $vlan");
+    $logger->info("[$mac] PID: \"" .$node_info->{pid}. "\", Status: " .$node_info->{status}. " Returned VLAN: $vlan, Role: $user_role ");
     return ( $vlan, 0, $user_role );
 }
 
@@ -355,6 +355,8 @@ sub getNormalVlan {
     my $logger = Log::Log4perl->get_logger(__PACKAGE__);
     my $profile = pf::Portal::ProfileFactory->instantiate($mac);
 
+    my ($vlan, $role, $result);
+
     my $provisioner = $profile->findProvisioner($mac,$node_info);
     if (defined($provisioner) && $provisioner->{enforce}) {
         $logger->info("[$mac] Triggering provisioner check");
@@ -364,17 +366,14 @@ sub getNormalVlan {
         $logger->info("[$mac] Can't find provisioner");
     }
 
-    # Bypass VLAN is configured in node record so we return accordingly
-    if ( defined($node_info->{'bypass_vlan'}) && $node_info->{'bypass_vlan'} ne '' ) {
-        $logger->info("[$mac] Bypass VLAN '" . $node_info->{'bypass_vlan'} . "' is configured.");
-        return $node_info->{'bypass_vlan'};
-    }
+    ( $vlan, $role ) = _check_bypass($node_info);
+    return ( $vlan, $role ) if ( $vlan || $role );
 
     $logger->debug("[$mac] Trying to determine VLAN from role.");
 
     # Vlan Filter
     my $filter = new pf::vlan::filter;
-    my ($result,$role) = $filter->test('NormalVlan',$switch, $ifIndex, $mac, $node_info, $connection_type, $user_name, $ssid, $radius_request);
+    ($result,$role) = $filter->test('NormalVlan',$switch, $ifIndex, $mac, $node_info, $connection_type, $user_name, $ssid, $radius_request);
     return ($result,$role) if $result;
 
     # Try MAC_AUTH, then other EAP methods and finally anything else.
@@ -447,7 +446,7 @@ sub getNormalVlan {
         $role = $node_info->{'category'};
         $logger->info("[$mac] Username was NOT defined or unable to match a role - returning node based role '$role'");
     }
-    my $vlan = $switch->getVlanByName($role);
+    $vlan = $switch->getVlanByName($role);
     return ($vlan, $role);
 }
 
@@ -686,6 +685,23 @@ sub isInlineTrigger {
             return $TRUE if (($type eq $SSID) && ($ssid eq $tid));
         }
     }
+}
+
+sub _check_bypass {
+    my ( $node_info ) = @_;
+    my $logger = Log::Log4perl::get_logger( ref(__PACKAGE__) );
+
+    my $mac = $node_info->{'mac'};
+    # Bypass VLAN/role is configured in node record so we return accordingly
+    if (   ( defined( $node_info->{'bypass_vlan'} ) && $node_info->{'bypass_vlan'} ne '' )
+        or ( defined( $node_info->{'bypass_role'} ) && $node_info->{'bypass_role'} ne '' ) )
+    {
+        $logger->info( "[$mac] A bypass is configured. Returning (VLAN,role): "
+                . $node_info->{'bypass_vlan'} . ","
+                . $node_info->{'bypass_role'} );
+        return ( $node_info->{'bypass_vlan'}, $node_info->{'bypass_role'} );
+    }
+    return ( undef, undef );
 }
 
 =head1 AUTHOR

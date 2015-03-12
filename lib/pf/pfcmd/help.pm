@@ -165,6 +165,7 @@ Services managed by PacketFence:
   pfdhcplistener   | PF DHCP monitoring daemon
   pfdns            | DNS daemon
   pfmon            | PF ARP monitoring daemon
+  pfqueue          | PF queue daemon
   pfsetvlan        | PF VLAN isolation daemon
   radiusd          | FreeRADIUS daemon
   redis            | redis daemon

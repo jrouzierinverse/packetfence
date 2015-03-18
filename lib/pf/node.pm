@@ -308,7 +308,7 @@ sub node_db_prepare {
             detect_date, regdate, unregdate, lastskip,
             user_agent, computername, dhcp_fingerprint,
             last_arp, last_dhcp,
-            notes
+            node.notes
         FROM node
             LEFT JOIN node_category as nr on node.category_id = nr.category_id
         WHERE status = "$STATUS_UNREGISTERED" AND mac = ?
@@ -321,7 +321,7 @@ sub node_db_prepare {
             detect_date, regdate, unregdate, lastskip,
             user_agent, computername, dhcp_fingerprint,
             last_arp, last_dhcp,
-            notes
+            node.notes
         FROM node
             LEFT JOIN node_category as nr on node.category_id = nr.category_id
         WHERE status = "$STATUS_UNREGISTERED"
@@ -334,7 +334,7 @@ sub node_db_prepare {
             detect_date, regdate, unregdate, lastskip,
             user_agent, computername, dhcp_fingerprint,
             last_arp, last_dhcp,
-            notes
+            node.notes
         FROM node
             LEFT JOIN node_category as nr on node.category_id = nr.category_id
         WHERE status = "$STATUS_REGISTERED"

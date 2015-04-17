@@ -64,6 +64,7 @@ our (
     $domain_config_file,
     $scan_config_file,
     $wmi_config_file,
+    $billing_config_file,
 );
 
 BEGIN {
@@ -106,6 +107,7 @@ BEGIN {
         $domain_config_file
         $scan_config_file
         $wmi_config_file
+        $billing_config_file
     );
 }
 
@@ -161,6 +163,7 @@ $server_pem = catfile($conf_dir,"ssl/server.pem");
 $domain_config_file = catfile($conf_dir,"domain.conf");
 $scan_config_file = catfile($conf_dir,"scan.conf");
 $wmi_config_file = catfile($conf_dir,"wmi.conf");
+$billing_config_file = catfile($conf_dir,"billing.conf");
 
 $oui_url               = 'http://standards.ieee.org/regauth/oui/oui.txt';
 $dhcp_fingerprints_url = 'http://www.packetfence.org/dhcp_fingerprints.conf';
@@ -187,6 +190,8 @@ $dhcp_fingerprints_url = 'http://www.packetfence.org/dhcp_fingerprints.conf';
     $admin_roles_config_file,$wrix_config_file,$apache_filters_config_file,
     $vlan_filters_config_file,$firewall_sso_config_file,$scan_config_file,
     $wmi_config_file,
+    $vlan_filters_config_file,$firewall_sso_config_file,
+    $billing_config_file,
 );
 
 

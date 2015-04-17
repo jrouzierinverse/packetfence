@@ -18,6 +18,7 @@ use warnings;
 use HTML::FormHandler::Moose::Role;
 use List::MoreUtils qw(uniq);
 
+use pf::ConfigStore::Billing;
 use pf::authentication;
 use pf::ConfigStore::Provisioning;
 use pf::ConfigStore::Scan;
@@ -428,6 +429,42 @@ Returns the list of sources to be displayed
 
 sub options_custom_fields_authentication_sources {
     return map { { value => $_->id, label => $_->id } } @{getAllAuthenticationSources()};
+}
+
+=head2 billing
+
+Collection Billing configuration for the profile
+
+=cut
+
+has_field 'billing' =>
+  (
+    'type' => 'DynamicTable',
+    'sortable' => 1,
+    'do_label' => 0,
+  );
+
+=head2 billing.contains
+
+The definition for Billing field
+
+=cut
+
+has_field 'billing.contains' =>
+  (
+    type => 'Select',
+    options_method => \&options_billing,
+    widget_wrapper => 'DynamicTableRow',
+  );
+
+=head2 options_billing
+
+Returns the list of billing to be displayed
+
+=cut
+
+sub options_billing {
+    return  map { { value => $_, label => $_ } } @{pf::ConfigStore::Billing->new->readAllIds};
 }
 
 =head2 validate

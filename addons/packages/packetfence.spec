@@ -780,6 +780,8 @@ fi
 %config(noreplace)      /usr/local/pf/conf/apache_filters.conf
                         /usr/local/pf/conf/apache_filters.conf.example
 %config(noreplace)      /usr/local/pf/conf/authentication.conf
+%config(noreplace)      /usr/local/pf/conf/billing.conf
+                        /usr/local/pf/conf/billing.conf.example
 %config(noreplace)      /usr/local/pf/conf/chi.conf
 %config                 /usr/local/pf/conf/dhcp_fingerprints.conf
 %config                 /usr/local/pf/conf/documentation.conf
@@ -872,6 +874,8 @@ fi
 %dir                    /usr/local/pf/conf/ssl
 %config(noreplace)      /usr/local/pf/conf/switches.conf
                         /usr/local/pf/conf/switches.conf.example
+%config(noreplace)      /usr/local/pf/conf/tiers.conf
+                        /usr/local/pf/conf/tiers.conf.example
 %config(noreplace)      /usr/local/pf/conf/vlan_filters.conf
                         /usr/local/pf/conf/vlan_filters.conf.example
 %config                 /usr/local/pf/conf/dhcpd.conf

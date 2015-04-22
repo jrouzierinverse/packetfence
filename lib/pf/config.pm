@@ -118,6 +118,8 @@ our (
     %ConfigWmi,
 #billing.conf
     %ConfigBilling,
+#tiers.conf
+    %ConfigTiers,
 );
 
 BEGIN {
@@ -167,6 +169,7 @@ BEGIN {
         %ConfigScan
         %ConfigWmi
         %ConfigBilling
+        %ConfigTiers
     );
 }
 
@@ -226,6 +229,8 @@ tie %ConfigScan, 'pfconfig::cached_hash', 'config::Scan';
 tie %ConfigWmi, 'pfconfig::cached_hash', 'config::Wmi';
 
 tie %ConfigBilling, 'pfconfig::cached_hash', 'config::Billing';
+
+tie %ConfigTiers, 'pfconfig::cached_hash', 'config::Tiers';
 
 sub import {
     pf::config->export_to_level(1,@_);

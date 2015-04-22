@@ -25,6 +25,7 @@ use pf::log;
 use pf::node;
 use pf::factory::provisioner;
 use pf::ConfigStore::Scan;
+use pf::authentication;
 
 =head1 METHODS
 
@@ -361,6 +362,26 @@ sub guestRegistrationOnly {
     my $result = all { exists $registration_types{$_->{'type'}} } @sources;
 
     return $result;
+}
+
+=item getBillingOnly
+
+Returns true if the profile only uses Billing engine.
+
+=cut
+
+sub getBillingOnly {
+    my ($self) = @_;
+    my @sources = $self->getSources();
+    my $billing = $self->getBillingEngine();
+    my @allsources = [
+            map    { $_->id }
+              grep { $_->class ne 'exclusive' }
+              @{ pf::authentication::getAllAuthenticationSources() }
+        ];
+    return $TRUE if (($billing ne '') && (@sources == @allsources));
+    return $FALSE;
+
 }
 
 =item guestModeAllowed

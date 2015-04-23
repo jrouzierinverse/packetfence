@@ -379,7 +379,7 @@ sub getBillingOnly {
               grep { $_->class ne 'exclusive' }
               @{ pf::authentication::getAllAuthenticationSources() }
         ];
-    return $TRUE if (($billing ne '') && (@sources == @allsources));
+    return $TRUE if (($billing ne '') && (@sources ~~ @allsources));
     return $FALSE;
 
 }

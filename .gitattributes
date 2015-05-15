@@ -2,4 +2,4 @@
 .gitignore              export-ignore
 .mtn-ignore             export-ignore
 conf/.gitattributes     export-ignore
- NEWS.asciidoc merge=union
+NEWS.asciidoc merge=union

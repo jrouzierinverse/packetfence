@@ -17,7 +17,7 @@ with 'pfappserver::Base::Form::Role::Help';
 use pf::config;
 use pf::util;
 use File::Find qw(find);
-iuse pf::ConfigStore::Tiers;
+use pf::ConfigStore::Tiers;
 
 ## Definition
 

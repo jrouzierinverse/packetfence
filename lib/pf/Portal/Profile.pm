@@ -535,6 +535,14 @@ sub findScan {
     return undef;
 }
 
+=item tiers attribute
+
+=cut
+
+sub tiers {
+    $_[0]->{_tiers}
+}
+
 =back
 
 =head1 AUTHOR

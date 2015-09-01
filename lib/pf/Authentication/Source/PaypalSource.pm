@@ -48,6 +48,8 @@ has 'client_secret' => (is => 'rw', required => 1);
 
 has 'payment_method' => (is => 'rw', default => 'paypal');
 
+has 'domains' => (isa => 'Str', is => 'rw', required => 1, default => '*.paypal.com,*.paypalobjects.com');
+
 =head2 curl
 
   Creates a curl object to connect to the rpc server

@@ -27,7 +27,7 @@ use pf::util::apache qw(url_parser);
 
 =head2 oauth_domain
 
-Build all the permit domain for oauth authentication
+Build all the permit domain for oauth/billing authentication
 
 =cut
 
@@ -35,12 +35,8 @@ sub oauth_domain {
 
     my @domains;
     foreach my $source ( @authentication_sources ) {
-
-        my $classname = $source->meta->name;
-
-        if ( ($classname eq 'pf::Authentication::Source::GoogleSource') || ($classname eq 'pf::Authentication::Source::GithubSource') || ($classname eq 'pf::Authentication::Source::FacebookSource') || ($classname eq 'pf::Authentication::Source::LinkedInSource') || ($classname eq 'pf::Authentication::Source::WindowsLiveSource') || ($classname eq 'pf::Authentication::Source::TwitterSource')) {
+        if ($source->can("domains")) {
             push(@domains, split(',',$source->{'domains'}));
-
         }
     }
 

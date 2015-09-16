@@ -46,6 +46,8 @@ use pf::services::util;
 use pf::util::dhcp;
 use List::MoreUtils qw(any);
 use pf::api::jsonrpcclient;
+use pf::client::queue;
+use pf::task::api;
 use NetAddr::IP;
 use pf::SwitchFactory;
 
@@ -98,8 +100,9 @@ my $interface_vlan;
 my @local_dhcp_servers_ip;
 my @local_dhcp_servers_mac;
 my $pcap;
-my $apiclient = pf::api::jsonrpcclient->new;
+my $queueclient = pf::client::queue->new;
 my $net_type;
+my $QUEUE = 'general';
 
 $PROGRAM_NAME = $0 = "${PROGRAM_NAME}_${interface}";
 
@@ -311,7 +314,7 @@ sub listen_dhcp {
             dhcp_vendor         => $tmp{'dhcp_vendor'},
             mac                 => $dhcp->{'chaddr'},
         );
-        $apiclient->notify('fingerbank_process', \%fingerbank_query_args );
+        $queueclient->submit($QUEUE,pf::task::api->new('fingerbank_process' => \%fingerbank_query_args ));
 
         my $modified_node_log_message = '';
         foreach my $node_key ( keys %tmp ) {
@@ -373,7 +376,7 @@ sub parse_dhcp_request {
            'mac' => $dhcp->{'chaddr'},
            'net_type' => $net_type,
         );
-        $apiclient->notify('trigger_scan', %data );
+        $queueclient->submit($QUEUE,pf::task::api->new('trigger_scan' => %data));
 
         if(defined($lease_length)) {
             my $firewallsso = pf::firewallsso->new;
@@ -388,7 +391,7 @@ sub parse_dhcp_request {
     }
 
     if ($is_inline_vlan || grep ( { $_->{'gateway'} eq $dhcp->{'src_ip'} } @inline_nets)) {
-        $apiclient->notify('synchronize_locationlog',$interface_ip,$interface_ip,undef, $NO_PORT, $interface_vlan, $dhcp->{'chaddr'}, $NO_VOIP, $INLINE);
+        $queueclient->submit($QUEUE,pf::task::api->new('synchronize_locationlog',$interface_ip,$interface_ip,undef, $NO_PORT, $interface_vlan, $dhcp->{'chaddr'}, $NO_VOIP, $INLINE));
         $accessControl->performInlineEnforcement($dhcp->{'chaddr'});
     }
 }
@@ -418,7 +421,7 @@ sub parse_dhcp_ack {
            'mac' => $dhcp->{'chaddr'},
            'net_type' => $net_type,
         );
-        $apiclient->notify('trigger_scan', %data );
+        $queueclient->submit($QUEUE,pf::task::api->new('trigger_scan' => %data));
 
     } elsif ($dhcp->{'ciaddr'} !~ /^0\.0\.0\.0$/) {
 
@@ -433,7 +436,7 @@ sub parse_dhcp_ack {
            'mac' => $dhcp->{'chaddr'},
            'net_type' => $net_type,
         );
-        $apiclient->notify('trigger_scan', %data );
+        $queueclient->submit($QUEUE,pf::task::api->new('trigger_scan' => %data));
 
     } else {
         $logger->warn(
@@ -449,7 +452,7 @@ sub parse_dhcp_ack {
 sub parse_dhcp_release {
     my ($dhcp) = @_;
     $logger->debug("DHCPRELEASE from $dhcp->{'chaddr'} ($dhcp->{ciaddr})");
-    $apiclient->notify('close_iplog',$dhcp->{'ciaddr'});
+    $queueclient->submit($QUEUE,pf::task::api->new('close_iplog' => $dhcp->{'ciaddr'}));
 }
 
 =item parse_dhcp_inform
@@ -507,7 +510,7 @@ sub rogue_dhcp_handling {
            'tid' => $ROGUE_DHCP_TRIGGER,
            'type' => 'INTERNAL',
         );
-        $apiclient->notify('trigger_violation', %data );
+        $queueclient->submit($QUEUE,pf::task::api->new('trigger_violation' => %data));
     } else {
         $logger->info("Unable to find MAC based on IP $dhcp_srv_ip for rogue DHCP server");
         $dhcp_srv_mac = 'unknown';
@@ -548,7 +551,7 @@ sub parse_dhcp_option82 {
 
         # TODO port should be translated into ifIndex
         # FIXME option82 stuff needs to be re-validated (#1340)
-        $apiclient->notify('insert_close_locationlog',$switch, $mod . '/' . $port, $vlan, $dhcp->{'chaddr'}, '');
+        $queueclient->submit($QUEUE,pf::task::api->new('insert_close_locationlog',$switch, $mod . '/' . $port, $vlan, $dhcp->{'chaddr'}, ''));
     }
 }
 
@@ -569,7 +572,7 @@ sub update_iplog {
         my $firewallsso = pf::firewallsso->new;
         $firewallsso->do_sso('Stop',$oldmac,$oldip,undef);
         if ($view_mac->{'last_connection_type'} eq $connection_type_to_str{$INLINE}) {
-            $apiclient->notify('ipset_node_update',$oldip, $srcip, $srcmac);
+            $queueclient->submit($QUEUE,pf::task::api->new('ipset_node_update',$oldip, $srcip, $srcmac));
         }
     }
     my %data = (
@@ -579,7 +582,7 @@ sub update_iplog {
         'oldip' => $oldip,
         'oldmac' => $oldmac,
     );
-    $apiclient->notify('update_iplog', %data );
+    $queueclient->submit($QUEUE,pf::task::api->new('update_iplog', %data ));
 }
 
 sub normal_sighandler {

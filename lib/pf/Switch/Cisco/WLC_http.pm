@@ -177,7 +177,7 @@ sub returnRadiusAccessAccept {
             'Tunnel-Type' => $RADIUS::VLAN,
             'Tunnel-Private-Group-ID' => $vlan,
         };
-        
+
         # Delete the username when doing 802.1x as the WLC trusts this more than what's in the request
         # and we want to see the original username in the WLC
         delete $radius_reply_ref->{'User-Name'};
@@ -239,8 +239,7 @@ sub radiusDisconnect {
         };
 
         $logger->debug("[$mac] network device (".$self->{'_id'}.") supports roles. Evaluating role to be returned");
-        my $roleResolver = pf::roles::custom->instance();
-        my $role = $roleResolver->getRoleForNode($mac, $self);
+        my $role = pf::roles::custom->getRoleForNode($mac, $self);
 
         my $acctsessionid = node_accounting_current_sessionid($mac);
         my $node_info = node_view($mac);
@@ -330,7 +329,7 @@ sub parseRequest {
     my $port            = $radius_request->{'NAS-Port'};
     my $eap_type        = ( exists($radius_request->{'EAP-Type'}) ? $radius_request->{'EAP-Type'} : 0 );
     my $nas_port_id     = ( defined($radius_request->{'NAS-Port-Id'}) ? $radius_request->{'NAS-Port-Id'} : undef );
-    
+
     my $session_id;
     if (defined($radius_request->{'Cisco-AVPair'})) {
         if ($radius_request->{'Cisco-AVPair'} =~ /audit-session-id=(.*)/ig ) {

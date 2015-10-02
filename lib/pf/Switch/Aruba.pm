@@ -517,8 +517,7 @@ sub radiusDisconnect {
         };
 
         $logger->debug("network device supports roles. Evaluating role to be returned");
-        my $roleResolver = pf::roles::custom->instance();
-        my $role = $roleResolver->getRoleForNode($mac, $self);
+        my $role = pf::roles::custom->getRoleForNode($mac, $self);
 
         my $acctsessionid = node_accounting_current_sessionid($mac);
         my $node_info = node_attributes($mac);

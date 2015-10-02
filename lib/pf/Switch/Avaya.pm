@@ -42,6 +42,7 @@ use pf::util;
 use pf::accounting qw(node_accounting_current_sessionid);
 use pf::node qw(node_attributes);
 use pf::util::radius qw(perform_coa perform_disconnect);
+use pf::roles::custom;
 
 sub description { 'Avaya Switch Module' }
 
@@ -219,9 +220,9 @@ sub _authorizeMAC {
         return 0;
     }
 
-    # careful readers will notice that we don't use getBoardPortFromIfIndex here. 
+    # careful readers will notice that we don't use getBoardPortFromIfIndex here.
     # That's because Nortel thought that it made sense to start BoardIndexes differently for different OIDs
-    # on the same switch!!! 
+    # on the same switch!!!
     my ( $boardIndx, $portIndx ) = $this->getBoardPortFromIfIndexForSecurityStatus($ifIndex);
     my @boardIndx;
 
@@ -231,7 +232,7 @@ sub _authorizeMAC {
     } else {
         push (@boardIndx, $boardIndx);
     }
- 
+
     my $cfgStatus = ($authorize) ? 2 : 3;
     my $mac_oid = mac2oid($mac);
 
@@ -474,8 +475,7 @@ sub radiusDisconnect {
         };
 
         $logger->debug("network device supports roles. Evaluating role to be returned");
-        my $roleResolver = pf::roles::custom->instance();
-        my $role = $roleResolver->getRoleForNode($mac, $self);
+        my $role = pf::roles::custom->getRoleForNode($mac, $self);
 
         my $acctsessionid = node_accounting_current_sessionid($mac);
         my $node_info = node_attributes($mac);

@@ -117,6 +117,7 @@ use pf::util;
 use pf::accounting qw(node_accounting_current_sessionid);
 use pf::node qw(node_attributes);
 use pf::util::radius qw(perform_coa perform_disconnect);
+use pf::roles::custom;
 
 
 sub description { 'Cisco Catalyst 2960' }
@@ -407,8 +408,7 @@ sub radiusDisconnect {
         };
 
         $logger->debug("[$mac] network device (".$self->{'_id'}.") supports roles. Evaluating role to be returned");
-        my $roleResolver = pf::roles::custom->instance();
-        my $role = $roleResolver->getRoleForNode($mac, $self);
+        my $role = pf::roles::custom->getRoleForNode($mac, $self);
 
         my $node_info = node_attributes($mac);
         # transforming MAC to the expected format 00-11-22-33-CA-FE
@@ -501,7 +501,7 @@ sub returnRadiusAccessAccept {
         };
     }
 
-    
+
     if ( isenabled($self->{_AccessListMap}) && $self->supportsAccessListBasedEnforcement ){
         if( defined($user_role) && $user_role ne ""){
             my $access_list = $self->getAccessListByName($user_role);
@@ -509,8 +509,8 @@ sub returnRadiusAccessAccept {
             while($access_list =~ /([^\n]+)\n?/g){
                 push(@av_pairs, $self->returnAccessListAttribute."=".$1);
                 $logger->info("[$mac] (".$self->{'_id'}.") Adding access list : $1 to the RADIUS reply");
-            } 
-            $radius_reply_ref->{'Cisco-AVPair'} = \@av_pairs; 
+            }
+            $radius_reply_ref->{'Cisco-AVPair'} = \@av_pairs;
             $logger->info("[$mac] (".$self->{'_id'}.") Added access lists to the RADIUS reply.");
         }
     }

@@ -39,6 +39,7 @@ use pf::Switch::constants;
 use pf::util;
 use pf::constants;
 use pf::config;
+use pf::roles::custom;
 
 =head1 SUBROUTINES
 
@@ -242,8 +243,7 @@ sub radiusDisconnect {
         };
 
         $logger->debug("[$self->{'_ip'}] Network device supports roles. Evaluating role to be returned.");
-        my $roleResolver = pf::roles::custom->instance();
-        my $role = $roleResolver->getRoleForNode($mac, $self);
+        my $role = pf::roles::custom->getRoleForNode($mac, $self);
 
         my $acctsessionid = node_accounting_current_sessionid($mac);
         my $node_info = node_attributes($mac);

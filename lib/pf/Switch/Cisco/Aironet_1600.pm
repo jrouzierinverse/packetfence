@@ -22,6 +22,7 @@ use pf::config;
 use pf::Switch::constants;
 use pf::util qw(format_mac_as_cisco);
 use pf::util::radius qw(perform_coa perform_disconnect);
+use pf::roles::custom;
 
 use base ('pf::Switch::Cisco::Aironet');
 
@@ -105,8 +106,7 @@ sub radiusDisconnect {
         };
 
         $logger->debug("[$mac] network device (".$self->{'_id'}.") supports roles. Evaluating role to be returned");
-        my $roleResolver = pf::roles::custom->instance();
-        my $role = $roleResolver->getRoleForNode($mac, $self);
+        my $role = pf::roles::custom->getRoleForNode($mac, $self);
 
         # Standard Attributes
         my $attributes_ref = {

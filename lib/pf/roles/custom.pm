@@ -6,7 +6,7 @@ pf::roles::custom - OO module that performs the roles lookups for nodes
 
 =head1 SYNOPSIS
 
-The pf::roles::custom implements roles lookups for nodes that are custom to a particular setup. 
+The pf::roles::custom implements roles lookups for nodes that are custom to a particular setup.
 
 This module extends pf::roles
 
@@ -18,12 +18,14 @@ future at the cost of API changes.
 
 You have been warned!
 
+=head1 DEVELOPER NOTES
+
+The Class Singleton patterns means you cannot not keep state within this module.
+
 =cut
 
 use strict;
 use warnings;
-
-use Log::Log4perl;
 
 use base ('pf::roles');
 use pf::config;

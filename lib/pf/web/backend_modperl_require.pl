@@ -21,13 +21,10 @@ use Log::Log4perl;
 use pf::config;
 use pf::locationlog;
 use pf::node;
-use pf::roles::custom;
 use pf::Switch;
 use pf::SwitchFactory;
 use pf::util;
 
-# Forces a pre-load of the singletons to avoid penalty performance on first request
-pf::roles::custom->instance();
 
 =head1 AUTHOR
 

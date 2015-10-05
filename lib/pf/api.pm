@@ -33,6 +33,7 @@ use pf::violation();
 use pf::soh::custom();
 use pf::util();
 use pf::node();
+use pf::nodecategory();
 use pf::locationlog();
 use pf::ipset();
 use pfconfig::util;
@@ -325,7 +326,6 @@ sub firewall : Public {
     $inline->performInlineEnforcement($postdata{'mac'});
 }
 
-
 # Handle connection types $WIRED_SNMP_TRAPS
 sub _reassignSNMPConnections {
     my ( $switch, $mac, $ifIndex, $connection_type ) = @_;
@@ -386,7 +386,6 @@ sub _node_determine_and_set_into_VLAN {
     );
 }
 
-
 =head2 violation_delayed_run
 
 runs the delayed violation now
@@ -438,10 +437,42 @@ sub release_all_violations : Public {
     return $closed_violation;
 }
 
-
 =head2 add_node
 
 Modify a node
+
+Json Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "add_node", "params" : [ "mac" : "00:00:00:00:00:00", "status" : "reg", "pid" : "pid", "category" : "rolename" ] }
+
+All node attributes
+
+    pid
+    category
+    status
+    voip
+    bypass_vlan
+    bypass_role_id
+    detect_date
+    regdate
+    unregdate
+    lastskip
+    user_agent
+    computername
+    dhcp_fingerprint
+    last_arp
+    last_dhcp
+    notes
+    autoreg
+    sessionid
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
 
 =cut
 
@@ -459,7 +490,7 @@ sub modify_node : Public {
         }
     }
     pf::node::node_modify($postdata{'mac'}, %postdata);
-    return;
+    return 1;
 }
 
 =head2 register_node
@@ -482,21 +513,45 @@ sub register_node : Public {
 
 Deregister a node
 
+Json Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "deregister_node", "params" : [ "mac" : "00:00:00:00:00:00" }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
 =cut
 
 sub deregister_node : Public {
     my ($class, %postdata )  = @_;
     my @require = qw(mac);
     my @found = grep {exists $postdata{$_}} @require;
-    return unless validate_argv(\@require,  \@found);
+    die "Node attribute 'mac' is not provided" unless validate_argv(\@require,  \@found);
 
     pf::node::node_deregister($postdata{'mac'}, %postdata);
-    return;
+    return 1;
 }
 
 =head2 node_information
 
 Return all the node attributes
+
+Json Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "node_information", "params" : [ "mac" : "00:00:00:00:00:00" }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [{ "mac" : "00:00:00:00:00:00", ...}]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
 
 =cut
 
@@ -625,6 +680,10 @@ sub expire_cluster : Public {
     return 1;
 }
 
+=head2 expire
+
+=cut
+
 sub expire : Public {
     my ($class, %postdata ) = @_;
     my $logger = pf::log::get_logger;
@@ -662,7 +721,6 @@ sub validate_argv {
     }
     return 1;
 }
-
 
 =head2 add_person
 
@@ -788,7 +846,6 @@ sub delete_person {
     my $result = pf::person::person_delete($pid);
     return $result;
 }
-
 
 =head2 whowasi
 
@@ -1005,7 +1062,7 @@ sub process_dhcp : Public {
     my @require = qw(src_mac src_ip dest_mac dest_ip running_w_dhcpd is_inline_vlan interface interface_ip interface_vlan net_type udp_payload_b64);
     my @found = grep {exists $postdata{$_}} @require;
     return unless validate_argv(\@require,\@found);
-    
+
     $postdata{udp_payload} = MIME::Base64::decode($postdata{udp_payload_b64});
     pf::dhcp::processor->new(%postdata)->process_packet();
 
@@ -1070,6 +1127,144 @@ sub process_dhcpv6 : Public {
     pf::fingerbank::process(\%fingerbank_query_args);
 
     pf::node::node_modify($mac_address, dhcp6_fingerprint => $dhcp6_fingerprint, dhcp6_enterprise => $dhcp6_enterprise);
+}
+
+=head2 add_node
+
+Json Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "add_node", "params" : [ "mac" : "00:00:00:00:00:00", "status" : "reg", "pid" : "pid", "category" : "rolename" ] }
+
+All node attributes
+
+    pid               The pid that will own the node
+    category          The name of the role
+    status            The status of the node status allowed values reg, undeg, pending
+    voip              Is this node a voip telephone allowed values no, yes
+    bypass_vlan       The bypass vlan
+    bypass_role       The bypass role
+    detect_date       The date the node was detected
+    regdate           The registration date
+    unregdate         The unregistration date
+    lastskip          The last skip date
+    user_agent        The user agent of the node
+    computername      The computer name of the node
+    dhcp_fingerprint  The dhcp fingerprint
+    last_arp          The date of the last arp
+    last_dhcp         The date of the dhcp update
+    notes             Notes of the node
+    autoreg           Whether autoreg is turned for this node allowed no, yes
+    sessionid         The sessionid of the node
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+=cut
+
+sub add_node : Public {
+    my ($class, %node_data) = @_;
+    _validate_node_data(\%node_data);
+    my $mac = delete $node_data{mac};
+    pf::node::node_add($mac, %node_data);
+    return 1;
+}
+
+=head2 _validate_node_data
+
+Validate node before adding it to the node table
+
+=cut
+
+sub _validate_node_data {
+    my ($node_data) = @_;
+    my @missing = grep { !defined $node_data->{$_} } qw(mac pid status);
+    die "None of the following mandatory node attributes were provided " . join(' , ', @missing) if @missing;
+    my $mac = clean_mac($node_data->{mac});
+    die "Node attribute mac '$mac' is invalid" unless valid_mac($mac);
+    my ($category, $bypass_role);
+    $node_data->{mac} = $mac;
+    #Check node category
+    $category = $node_data->{'category'} if exists $node_data->{'category'};
+    if (defined $category) {
+        my $role_id = pf::nodecategory::nodecategory_lookup($category);
+        die "Node attribute category '$category' does not exist" unless $role_id;
+        $node_data->{'category_id'} = $role_id;
+    }
+    $bypass_role = $node_data->{'bypass_role'} if exists $node_data->{'bypass_role'};
+    if (defined $bypass_role) {
+        my $role_id = pf::nodecategory::nodecategory_lookup($bypass_role);
+        die "Node attribute bypass_role '$bypass_role' does not exist" unless $role_id;
+        $node_data->{'bypass_role_id'} = $role_id;
+    }
+}
+
+=head2 bounce_node
+
+Json Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "bounce_node", "params" : ["00:00:00:00:00:00"]  }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+=cut
+
+sub bounce_node : Public {
+    my ($class, $mac) = @_;
+    my $node = node_view ($mac);
+    die "Unable to retrieve node '$mac'\n" unless $node;
+    my $switch_id = $node->{'last_switch'};
+    my $switch = pf::SwitchFactory->instantiate($switch_id);
+    die "Unable to find switch '$switch_id' assoicated with node '$mac'\n" unless $node;
+    $switch->bouncePort($node->{last_port});
+    return 1;
+}
+
+=head2 export_node_by_role
+
+Json Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "export_node_by_role", "params" : [ "mac" : "00:00:00:00:00:00", "role" : "category_name", "page_per_num" : 25, "page" : 0 ]  }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [{"page_per_num" : 25, "page" : 0, "results" : ["00:00:00:00:00:01", ...]}] }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef } }
+
+=cut
+
+sub export_node_by_role : Public {
+    my ($self, %args) = @_;
+    my $page_per_num = $args{page_per_num} // 25;
+    my $role = $args{role};
+    my $page = $args{page} // 0;
+    if (defined $role) {
+        my $role_id = pf::nodecategory::nodecategory_lookup($role);
+        die "Invalid role provided '$role'\n" unless $role_id;
+        return {
+            page_per_num => $page_per_num,
+            page => $page,
+            results => pf::node::node_mac_by_role($page_per_num, $page, $role_id)
+        };
+    }
+    return {
+        page_per_num => $page_per_num,
+        page => $page,
+        results => pf::node::node_mac_list($page_per_num, $page)
+    };
 }
 
 =head1 AUTHOR

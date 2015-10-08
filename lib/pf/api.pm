@@ -514,7 +514,7 @@ sub register_node : Public {
     return unless validate_argv(\@require,  \@found);
 
     pf::node::node_register($postdata{'mac'}, $postdata{'pid'}, %postdata);
-    return;
+    return 1;
 }
 
 =head2 deregister_node

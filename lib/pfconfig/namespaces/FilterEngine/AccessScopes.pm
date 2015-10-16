@@ -61,9 +61,14 @@ sub build {
 sub build_filter {
     my ($self, $filters_scopes, $parsed_conditions, $data) = @_;
     push @{$filters_scopes->{$data->{scope}}}, pf::filter->new({
-        answer    => $data,
+        answer    => $self->build_answer($data),
         condition => $self->build_filter_condition($parsed_conditions)
     });
+}
+
+sub build_answer {
+    my ($self, $data) = @_;
+    return $data;
 }
 
 sub build_filter_condition {

@@ -457,8 +457,9 @@ sub findScan {
     my $scanners = $self->getScans;
     return undef unless defined $scanners;
     my $logger = get_logger();
-    foreach my $scan (split(',', $scanners)) {
+    foreach my $scan (@$scanners) {
         my $scan_config = $pf::config::ConfigScan{$scan};
+        next unless $scan_config;
         my @categories  = split(',', $scan_config->{'categories'});
         my $oses        = $scan_config->{'oses'};
 

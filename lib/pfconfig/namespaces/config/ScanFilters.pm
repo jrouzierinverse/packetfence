@@ -25,7 +25,7 @@ use base 'pfconfig::namespaces::config';
 sub init {
     my ($self) = @_;
     $self->{file} = $scan_filters_config_file;
-    $self->{child_resources} = [ 'FilterEngine::ScanFilterEngineScopes'];
+    $self->{child_resources} = [ 'FilterEngine::ScanScopes'];
 }
 
 sub build_child {

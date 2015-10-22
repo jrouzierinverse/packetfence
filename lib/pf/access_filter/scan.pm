@@ -16,7 +16,7 @@ use pfconfig::cached_hash;
 
 use base qw(pf::access_filter);
 tie our %ConfigScanFilters, 'pfconfig::cached_hash', 'config::ScanFilters';
-tie our %ScanFilterEngineScopes, 'pfconfig::cached_hash', 'FilterEngine::ScanFilterEngineScopes';
+tie our %ScanFilterEngineScopes, 'pfconfig::cached_hash', 'FilterEngine::ScanScopes';
 
 =head2 getEngineForScope
 

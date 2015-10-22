@@ -1,14 +1,14 @@
-package pfconfig::namespaces::FilterEngine::ScanFilterEngineScopes;
+package pfconfig::namespaces::FilterEngine::ScanScopes;
 
 =head1 NAME
 
-pfconfig::namespaces::FilterEngine::ScanFilterEngineScopes
+pfconfig::namespaces::FilterEngine::ScanScopes
 
 =cut
 
 =head1 DESCRIPTION
 
-pfconfig::namespaces::FilterEngine::ScanFilterEngineScopes
+pfconfig::namespaces::FilterEngine::ScanScopes
 
 =cut
 
@@ -18,7 +18,7 @@ use pf::log;
 use pfconfig::namespaces::config;
 use pfconfig::namespaces::config::ScanFilters;
 
-use base 'pfconfig::namespaces::FilterEngine::AccessFilterEngineScopes';
+use base 'pfconfig::namespaces::FilterEngine::AccessScopes';
 
 sub parentConfig {
     my ($self) = @_;

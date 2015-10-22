@@ -883,6 +883,8 @@ fi
                         /usr/local/pf/conf/switches.conf.example
 %config(noreplace)      /usr/local/pf/conf/vlan_filters.conf
                         /usr/local/pf/conf/vlan_filters.conf.example
+%config(noreplace)      /usr/local/pf/conf/scan_filters.conf
+                        /usr/local/pf/conf/scan_filters.conf.example
 %config                 /usr/local/pf/conf/dhcpd.conf
 %config(noreplace)      /usr/local/pf/conf/haproxy.conf
                         /usr/local/pf/conf/haproxy.conf.example

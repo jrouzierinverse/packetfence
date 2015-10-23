@@ -17,12 +17,31 @@ use warnings;
 use pf::log;
 use pfconfig::namespaces::config;
 use pfconfig::namespaces::config::ScanFilters;
+use pf::condition_parser qw(parse_condition_string);
 
 use base 'pfconfig::namespaces::FilterEngine::AccessScopes';
 
 sub parentConfig {
     my ($self) = @_;
     return pfconfig::namespaces::config::ScanFilters->new($self->{cache});
+}
+
+sub build_answer {
+    my ($self, $answer) = @_;
+    if($answer->{wmi_request_rule}) {
+        my ($parsed_condition, $msg) = parse_condition_string($answer->{wmi_request_rule});
+        if($parsed_condition) {
+            $answer->{engine} = pf::filter_engine->new({
+                filters => [pf::filter->new({
+                    answer    => $answer,
+                    condition => $self->build_filter_condition($parsed_condition)
+                })],
+            });
+        } else {
+           get_logger->error("Cannot parse rule '$parsed_condition' : '$msg'");
+        }
+    }
+    return $answer;
 }
 
 =head1 AUTHOR

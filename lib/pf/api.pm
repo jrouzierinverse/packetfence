@@ -58,6 +58,28 @@ use pf::web::guest();
 use pf::dhcp::processor();
 use pf::util::dhcpv6();
 
+=head2 event_add
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "event_add", "params" : ["2015-10-10", "1.2.3.4", "detect", "12001"]  }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "event_add", "params" : ["2015-10-10", "1.2.3.4", "detect", "12001"] }'\
+    http://localhost:9090/
+
+=cut
+
 sub event_add : Public {
     my ($class, $date, $srcip, $type, $id) = @_;
     my $logger = pf::log::get_logger();
@@ -77,10 +99,54 @@ sub event_add : Public {
     return (1);
 }
 
+=head2 echo
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "echo", "params" : [1, 2, 3, 4]  }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "echo", "params" : [1, 2, 3, 4] }'\
+    http://localhost:9090/
+
+=cut
+
 sub echo : Public {
     my ($class, @args) = @_;
     return @args;
 }
+
+=head2 radius_authorize
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "radius_authorize", "params" : ["", "", "", ""]  }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "radius_authorize", "params" : ["", "", "", ""] }'\
+    http://localhost:9090/
+
+=cut
 
 sub radius_authorize : Public {
     my ($class, %radius_request) = @_;
@@ -97,6 +163,28 @@ sub radius_authorize : Public {
     return $return;
 }
 
+=head2 radius_accounting
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "radius_accounting", "params" : ["", "", "", ""]  }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "radius_accounting", "params" : ["", "", "", ""] }'\
+    http://localhost:9090/
+
+=cut
+
 sub radius_accounting : Public {
     my ($class, %radius_request) = @_;
     my $logger = pf::log::get_logger();
@@ -111,6 +199,28 @@ sub radius_accounting : Public {
     }
     return $return;
 }
+
+=head2 radius_update_locationlog
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "radius_update_locationlog", "params" : ["", "", "", ""]  }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "radius_update_locationlog", "params" : ["", "", "", ""] }'\
+    http://localhost:9090/
+
+=cut
 
 sub radius_update_locationlog : Public {
     my ($class, %radius_request) = @_;
@@ -127,6 +237,28 @@ sub radius_update_locationlog : Public {
     return $return;
 }
 
+=head2 soh_authorize
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "soh_authorize", "params" : ["", "", "", ""]  }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "soh_authorize", "params" : ["", "", "", ""] }'\
+    http://localhost:9090/
+
+=cut
+
 sub soh_authorize : Public {
     my ($class, %radius_request) = @_;
     my $logger = pf::log::get_logger();
@@ -141,6 +273,28 @@ sub soh_authorize : Public {
     }
     return $return;
 }
+
+=head2 update_iplog
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "update_iplog", "params" : ["", "", "", ""]  }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "update_iplog", "params" : ["", "", "", ""] }'\
+    http://localhost:9090/
+
+=cut
 
 sub update_iplog : Public {
     my ($class, %postdata) = @_;
@@ -168,6 +322,28 @@ sub update_iplog : Public {
     return (pf::iplog::open($postdata{'ip'}, $postdata{'mac'}, $postdata{'lease_length'}));
 }
 
+=head2 unreg_node_for_pid
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "unreg_node_for_pid", "params" : ["", "", "", ""]  }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "unreg_node_for_pid", "params" : ["", "", "", ""] }'\
+    http://localhost:9090/
+
+=cut
+
 sub unreg_node_for_pid : Public {
     my ($class, %postdata) = @_;
     my $logger = pf::log::get_logger();
@@ -185,12 +361,56 @@ sub unreg_node_for_pid : Public {
     return 1;
 }
 
+=head2 synchronize_locationlog
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "synchronize_locationlog", "params" : ["", "", "", ""]  }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "synchronize_locationlog", "params" : ["", "", "", ""] }'\
+    http://localhost:9090/
+
+=cut
+
 sub synchronize_locationlog : Public {
     my ( $class, $switch, $switch_ip, $switch_mac, $ifIndex, $vlan, $mac, $voip_status, $connection_type, $connection_sub_type, $user_name, $ssid ,$stripped_user_name, $realm) = @_;
     my $logger = pf::log::get_logger();
 
     return (pf::locationlog::locationlog_synchronize($switch, $switch_ip, $switch_mac, $ifIndex, $vlan, $mac, $voip_status, $connection_type, $connection_sub_type, $user_name, $ssid, $stripped_user_name, $realm));
 }
+
+=head2 insert_close_locationlog
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "insert_close_locationlog", "params" : ["", "", "", ""]  }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "insert_close_locationlog", "params" : ["", "", "", ""] }'\
+    http://localhost:9090/
+
+=cut
 
 sub insert_close_locationlog : Public {
     my ($class, $switch, $switch_ip, $switch_mac, $ifIndex, $vlan, $mac, $connection_type, $connection_sub_type, $user_name, $ssid, $stripped_user_name, $realm);
@@ -199,6 +419,28 @@ sub insert_close_locationlog : Public {
     return(pf::locationlog::locationlog_insert_closed($switch, $switch_ip, $switch_mac, $ifIndex, $vlan, $mac, $connection_type, $connection_sub_type, $user_name, $ssid, $stripped_user_name, $realm));
 }
 
+=head2 open_iplog
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "open_iplog", "params" : ["00:01:02:03:04:05", "1.2.3.4", "30"] }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef } }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "open_iplog", "params" : ["00:01:02:03:04:05", "1.2.3.4", "30"] }'\
+    http://localhost:9090/
+
+=cut
+
 sub open_iplog : Public {
     my ( $class, $mac, $ip, $lease_length ) = @_;
     my $logger = pf::log::get_logger();
@@ -206,12 +448,56 @@ sub open_iplog : Public {
     return (pf::iplog::open($ip, $mac, $lease_length));
 }
 
+=head2 close_iplog
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "close_iplog", "params" : ["1.2.3.4"] }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef } }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "close_iplog", "params" : ["1.2.3.4"] }'\
+    http://localhost:9090/
+
+=cut
+
 sub close_iplog : Public {
     my ( $class, $ip ) = @_;
     my $logger = pf::log::get_logger();
 
     return (pf::iplog::close($ip));
 }
+
+=head2 ipset_node_update
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "ipset_node_update", "params" : ["1.2.3.4", "1.2.3.5", "00:01:02:03:04:05"] }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef } }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "ipset_node_update", "params" : ["1.2.3.4", "1.2.3.5", "00:01:02:03:04:05"] }'\
+    http://localhost:9090/
+
+=cut
 
 sub ipset_node_update : Public {
     my ( $class, $oldip, $srcip, $srcmac ) = @_;
@@ -390,6 +676,24 @@ sub _node_determine_and_set_into_VLAN {
 
 runs the delayed violation now
 
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "violation_delayed_run", "params" : [2] }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "violation_delayed_run", "params" : [2] }'\
+    http://localhost:9090/
+
 =cut
 
 sub violation_delayed_run : Public {
@@ -401,6 +705,24 @@ sub violation_delayed_run : Public {
 =head2 trigger_violation
 
 Trigger a violation
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "trigger_violation", "params" : ["mac", "00:01:02:03:04:05", "tid", "", "type", ""] }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "trigger_violation", "params" : ["mac", "00:01:02:03:04:05", "tid", "", "type", ""] }'\
+    http://localhost:9090/
 
 =cut
 
@@ -416,6 +738,24 @@ sub trigger_violation : Public {
 =head2 release_all_violations
 
 Release all violations for a node
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "release_all_violations", "params" : ["00:01:02:03:04:05"] }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "release_all_violations", "params" : ["00:01:02:03:04:05"] }'\
+    http://localhost:9090/
 
 =cut
 
@@ -505,6 +845,24 @@ sub modify_node : Public {
 
 Register a node
 
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "register_node", "params" : ["mac", "00:01:02:03:04:05", "pid", user_name"] }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "register_node", "params" : ["mac", "00:01:02:03:04:05", "pid", "user_name"] }'\
+    http://localhost:9090/
+
 =cut
 
 sub register_node : Public {
@@ -586,6 +944,28 @@ sub node_information : Public {
     return $node_info;
 }
 
+=head2 notify_configfile_changed
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "notify_configfile_changed", "params" : ["server", "1.2.3.4", "conf_file", "/usr/local/pf/conf/pf.conf"] }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "notify_configfile_changed", "params" : ["server", "1.2.3.4", "conf_file", "/usr/local/pf/conf/pf.conf"] }'\
+    http://localhost:9090/
+
+=cut
+
 sub notify_configfile_changed : Public {
     my ($class, %postdata) = @_;
     my $logger = pf::log::get_logger;
@@ -623,6 +1003,28 @@ sub notify_configfile_changed : Public {
     return 1;
 }
 
+=head2 download_configfile
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "download_configfile", "params" : ["conf_file", "/usr/local/pf/conf/pf.conf"] }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "download_configfile", "params" : ["conf_file", "/usr/local/pf/conf/pf.conf"] }'\
+    http://localhost:9090/
+
+=cut
+
 sub download_configfile : Public {
     my ($class, %postdata) = @_;
     my @require = qw(conf_file);
@@ -634,6 +1036,28 @@ sub download_configfile : Public {
 
     return $config;
 }
+
+=head2 distant_download_configfile
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "distant_download_configfile", "params" : ["conf_file", "/usr/local/pf/conf/pf.conf", "from", "1.2.3.4"] }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "distant_download_configfile", "params" : ["conf_file", "/usr/local/pf/conf/pf.conf", "from", "1.2.3.4"] }'\
+    http://localhost:9090/
+
+=cut
 
 sub distant_download_configfile : Public {
     my ($class, %postdata) = @_;
@@ -648,6 +1072,28 @@ sub distant_download_configfile : Public {
     pf::util::safe_file_update($file, $result);
     return 1;
 }
+
+=head2 expire_cluster
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "expire_cluster", "params" : ["conf_file", "/usr/local/pf/conf/pf.conf", "namespace", "config:Pf"] }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "expire_cluster", "params" : ["conf_file", "/usr/local/pf/conf/pf.conf", "namespace", "config:Pf"] }'\
+    http://localhost:9090/
+
+=cut
 
 sub expire_cluster : Public {
     my ($class, %postdata) = @_;
@@ -702,6 +1148,24 @@ sub expire_cluster : Public {
 }
 
 =head2 expire
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "expire", "params" : ["light", "1", "namespace", "config:Pf"] }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "expire", "params" : ["light", "1", "namespace", "config:Pf"] }'\
+    http://localhost:9090/
 
 =cut
 

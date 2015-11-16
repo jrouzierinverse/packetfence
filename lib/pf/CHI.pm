@@ -26,7 +26,7 @@ use DBI;
 use Scalar::Util qw(tainted reftype);
 use pf::log;
 use Log::Any::Adapter;
-use Redis::Fast;
+use Redis;
 Log::Any::Adapter->set('Log4perl');
 
 my @PRELOADED_CHI_DRIVERS;
@@ -80,7 +80,7 @@ our %DEFAULT_CONFIG = (
             driver => 'Redis',
             compress_threshold => 10000,
             server => '127.0.0.1:6379',
-            redis_class => 'Redis::Fast',
+            redis_class => 'Redis',
             prefix => 'pf',
             expires_on_backend => 1,
             reconnect => 60,

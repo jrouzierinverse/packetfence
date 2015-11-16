@@ -12,7 +12,7 @@ expires_in=6h
 
 [storage redis]
 driver = Redis
-redis_class = Redis::Fast
+redis_class = Redis
 server = 127.0.0.1:6379
 prefix = pf
 expires_on_backend = 1

@@ -23,7 +23,7 @@ around get => sub {
     my $self = shift;
     my $start = Time::HiRes::gettimeofday();
     my $value = $self->$orig(@_);
-    $pf::StatsD::statsd->end("chi_get_" . $self->namespace . ".timing" , $start );
+    $pf::StatsD::statsd->end("pf_CHI_get_" . $self->namespace . ".timing" , $start );
     return $value;
 };
 
@@ -32,7 +32,7 @@ around set => sub {
     my $self = shift;
     my $start = Time::HiRes::gettimeofday();
     my $value = $self->$orig(@_);
-    $pf::StatsD::statsd->end("chi_set_" . $self->namespace . ".timing" , $start );
+    $pf::StatsD::statsd->end("pf_CHI_set_" . $self->namespace . ".timing" , $start );
     return $value;
 };
 

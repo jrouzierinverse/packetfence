@@ -116,7 +116,7 @@ sub chiConfigFromIniFile {
             my $value =  listify($storage->{$param});
             $storage->{$param} = [ map { split /\s*,\s*/, $_ } @$value ];
         }
-        push @{$storage->{traits}}, '+pf::Role::CHI::Driver::ComputeWithUndef';
+        push @{$storage->{traits}}, '+pf::Role::CHI::Driver::ComputeWithUndef','+pf::Role::CHI::Driver::Statsd';
     }
     setDefaultStorage($args{storage});
     setRawL1CacheAsLast($args{storage}{configfiles});

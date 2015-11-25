@@ -123,7 +123,7 @@ function updateSection(ajax_data) {
                 .fail(function(jqXHR) {
                     var status_msg = getStatusMsg(jqXHR);
                     var alert_section = section.children('h1, h2, h3').first().next();
-                    if (alert_section.length == 0) {
+                    if (alert_section.length === 0) {
                         section.prepend('<h2></h2><div></div>');
                         alert_section = section.children().first().next();
                     }
@@ -147,7 +147,7 @@ function pfOnHashChange(updater, default_url) {
     return function(event) {
         var hash = location.hash;
         var href = '/' + hash.replace(/^#\/*/,'');
-        if (default_url !== undefined && (href == '' || href == '/')) {
+        if (default_url !== undefined && (href === '' || href === '/')) {
             href = default_url;
         }
         updater(href);
@@ -198,7 +198,7 @@ function updateDynamicRowsAfterRemove(table) {
         var id = '#' + table.attr('id') + 'Empty';
         if ($(id).length) {
             // The table can be empty
-            if (count == 0) {
+            if (count === 0) {
                 if (tbody.prev('thead').length)
                     table.remove();
                 $(id).removeClass('hidden');
@@ -217,7 +217,7 @@ function updateExtendedDurationExample(group) {
     var fromString = fromElement.html();
     var toElement = $('#extendedTo');
 
-    function padZero(i) { return (i < 10)? '0'+i : i; };
+    function padZero(i) { return (i < 10)? '0'+i : i; }
 
     if (!fromDate) {
         // Initialize the reference date
@@ -337,7 +337,7 @@ $(function () { // DOM ready
         dp.pickers[0].element.trigger({ type: 'changeDate', date: dp.pickers[0].date });
 
         // End date
-        var format = dp.pickers[1].element.attr('data-date-format');
+        format = dp.pickers[1].element.attr('data-date-format');
         var now_str = format.replace('yyyy', now.yyyy).replace('mm', now.mm).replace('dd', now.dd);
         dp.pickers[1].element.val(now_str);
         dp.pickers[1].update();
@@ -377,7 +377,7 @@ $(function () { // DOM ready
             appendTo: 'body',
             cursor: 'move',
             helper: function(event) {
-                var txt = new Array();
+                var txt = [];
                 if (event.target.tagName == 'TD') {
                     var row = $(event.target).closest('tr').first();
                     row.find('td').each(function () {
@@ -405,15 +405,17 @@ $(function () { // DOM ready
             scope: id,
             accept: function(obj) {
                 var delta = 0;
+                var dragIndex;
+                var dropIndex;
                 if (obj.context.tagName == 'TR') {
-                    var dragIndex = obj.context.rowIndex;
-                    var dropIndex = this.rowIndex;
+                    dragIndex = obj.context.rowIndex;
+                    dropIndex = this.rowIndex;
                     delta = dropIndex - dragIndex;
                 }
                 else {
                     var items = $(this).closest('ul').children();
-                    var dragIndex = items.index(obj);
-                    var dropIndex = items.index(this);
+                    dragIndex = items.index(obj);
+                    dropIndex = items.index(this);
                     delta = dropIndex - dragIndex;
                 }
                 return (delta < 0 || delta > 1);
@@ -461,7 +463,7 @@ $(function () { // DOM ready
             updateDynamicRows(rows);
             var count = rows.length;
             if (count >= 2) {
-                var table = tbody.closest('table');
+                table = tbody.closest('table');
                 var id = '#' + table.attr('id') + 'Empty';
                 if ($(id).length) {
                     $(id).addClass('hidden');
@@ -641,7 +643,7 @@ $(function () { // DOM ready
                         $("body,html").animate({scrollTop:0}, 'fast');
                         var status_msg = getStatusMsg(jqXHR);
                         showError($('#section h2'), status_msg);
-                    })
+                    });
             });
     });
 
@@ -695,18 +697,19 @@ $(function () { // DOM ready
     if (typeof initModals == 'function') initModals();
 
     $('#checkup_dropdown_toggle').click(function () {
+      var li;
       if($(this).closest('li').hasClass('open')) {
         $.get("/admin/checkup", function(data){
           var dropdown = $('#checkup_dropdown');
           dropdown.html('');
           if(data.items.problems.length > 0){
             for(var i in data.items.problems){
-              var li = $('<li class="disabled"><a href="#">'+data.items.problems[i].severity+' : '+data.items.problems[i].message+'</a></li>');
+              li = $('<li class="disabled"><a href="#">'+data.items.problems[i].severity+' : '+data.items.problems[i].message+'</a></li>');
               dropdown.append(li);
             }
           }
           else{
-            var li = $('<li class="disabled"><a href="#">No problem detected !</a></li>');
+            li = $('<li class="disabled"><a href="#">No problem detected !</a></li>');
             dropdown.append(li);
           }
         });

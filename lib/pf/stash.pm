@@ -22,7 +22,7 @@ BEGIN {
     our ( @ISA, @EXPORT );
     @ISA = qw(Exporter);
     # Categorized by feature, pay attention when modifying
-    @EXPORT = qw(add_to_stash);
+    @EXPORT = qw(stash_add stash_clear);
 }
 
 =head2 $stash = pf::stash->new;
@@ -55,8 +55,17 @@ sub stash {
     return $self;
 }
 
-sub add_to_stash {
+sub clear {
+    my ($self) = @_;
+    %$self = ();
+}
+
+sub stash_add {
     $STASH->stash(@_);
+}
+
+sub stash_clear {
+    $STASH->clear;
 }
 
 

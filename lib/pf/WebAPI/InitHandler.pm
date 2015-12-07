@@ -18,6 +18,7 @@ use Apache2::RequestRec ();
 use pf::config::cached;
 use pf::StatsD qw($statsd);
 use pf::db;
+use pf::stash;
 use pf::CHI;
 use pf::SwitchFactory();
 
@@ -25,6 +26,7 @@ use Apache2::Const -compile => 'OK';
 
 sub handler {
     my $r = shift;
+    stash_clear();
     pf::config::cached::ReloadConfigs();
     return Apache2::Const::OK;
 }

@@ -10,6 +10,7 @@ $(document).ready(function() {
   $('.btn').on('click', function(event) {
     if ($(this).hasClass('disabled')) {
       event.stopPropagation();
+      $('#error').html('[% i18n("You need to accept the terms before proceeding any further.") | html %]');
       return false;
     }
   });
@@ -39,10 +40,12 @@ $(document).ready(function() {
         </div>
 
         [%# Error %]
-        [% IF txt_auth_error.defined %]<div class="error"><p>[% txt_auth_error %]</p></div>[% END %]
-        [% IF txt_validation_error.defined %]
-        <div class="error"><p>[% txt_validation_error %]</p></div>
-        [% END %]
+        <div class="error">
+            <p id="error">
+                [% IF txt_auth_error.defined %][% txt_auth_error %][% END %]
+                [% IF txt_validation_error.defined %] [% txt_validation_error %]  [% END %]
+            </p>
+        </div>
 
         <form name="login" method="post" action="/authenticate">
           <input type="hidden" name="destination_url" value="[% destination_url %]" />

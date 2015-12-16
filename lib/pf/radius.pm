@@ -546,6 +546,13 @@ sub _translateNasPortToIfIndex {
     return $port;
 }
 
+our %SUPPORT_METHODS = (
+    $WIRED_MAC_AUTH => 'supportsWiredMacAuth',
+    $WIRED_802_1X => 'supportsWiredDot1x',
+    $WIRELESS_MAC_AUTH => 'supportsWirelessMacAuth',
+    $WIRELESS_802_1X => 'supportsWiredDot1x',
+);
+
 =item * _isSwitchSupported
 
 Determines if switch is supported by current connection type.
@@ -555,20 +562,10 @@ Determines if switch is supported by current connection type.
 sub _isSwitchSupported {
     my ($self, $args) = @_;
     my $logger = $self->logger;
-
-    if ($args->{'connection_type'} == $WIRED_MAC_AUTH) {
-        return $args->{'switch'}->supportsWiredMacAuth();
-    } elsif ($args->{'connection_type'} == $WIRED_802_1X) {
-        return $args->{'switch'}->supportsWiredDot1x();
-    } elsif ($args->{'connection_type'} == $WIRELESS_MAC_AUTH) {
-        # TODO implement supportsWirelessMacAuth (or supportsWireless)
-        $logger->trace("Wireless doesn't have a supports...() call for now, always say it's supported");
-        return $TRUE;
-    } elsif ($args->{'connection_type'} == $WIRELESS_802_1X) {
-        # TODO implement supportsWirelessMacAuth (or supportsWireless)
-        $logger->trace("Wireless doesn't have a supports...() call for now, always say it's supported");
-        return $TRUE;
-    }
+    my $connection_type = $args->{connection_type};
+    return $FALSE unless defined $connection_type && exists $SUPPORT_METHODS{$connection_type};
+    my $method = $SUPPORT_METHODS{$connection_type};
+    return $args->{'switch'}->$method;
 }
 
 =item * _switchUnsupportedReply - what is sent to RADIUS when a switch is unsupported
@@ -599,7 +596,7 @@ sub _handleStaticPortSecurityMovement {
 
     my $old_switch_id = $locationlog_mac->{'switch'};
     #Nothing to do if it is the same switch
-    if ( $old_switch_id eq $args->{'switch'}->{_id} ) { 
+    if ( $old_switch_id eq $args->{'switch'}->{_id} ) {
         $pf::StatsD::statsd->end(called() . ".timing" , $start, 0.25 );
         return undef;
     }

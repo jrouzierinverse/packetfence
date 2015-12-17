@@ -166,7 +166,7 @@ sub run_child {
         $SIG{CHLD} = "DEFAULT";
         $IS_CHILD = 1;
         _run_child($id);
-    } 
+    }
 }
 
 populate_ipset_cache($IPSET_SESSION);
@@ -183,7 +183,12 @@ sub _run_child {
     my ($id) = @_;
     $0 = "$0 - $id";
     while($RUNNING) {
-        $ns->loop_once(10);
+        eval {
+            $ns->loop_once(10);
+        };
+        if($@) {
+            $logger->error($@);
+        }
     }
 }
 

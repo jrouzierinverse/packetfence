@@ -157,7 +157,12 @@ while ($RUNNING) {
     my @select_set = $read_set->can_read;
     foreach my $pcap (@select_set) {
         my $ready_fd = $pcap->fileno;
-        Net::Pcap::dispatch($listen_handler{$ready_fd}, -1, \&process_packet, $listen_handler{$ready_fd});
+        eval {
+            Net::Pcap::dispatch($listen_handler{$ready_fd}, -1, \&process_packet, $listen_handler{$ready_fd});
+        };
+        if($@) {
+            $logger->error($@);
+        }
     }
 }
 

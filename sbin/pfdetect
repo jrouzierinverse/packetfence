@@ -152,26 +152,31 @@ sub _run_detector {
 
     while (<$alert_pipe_fh>) {
         last unless $running;
+        eval {
 
-        my $line = $_;
-        $logger->info("alert received: '$line'");
-        my $data = $parser->parse($line);
-        unless($data) {
-            $logger->warn("unknown input: $line ");
-            next;
-        }
-        while (my ($type, $value) = each %{$data->{events}}) {
-            $client->notify( event_add => ( $data->{date}, $data->{srcip}, $type, $value ));
-        }
+            my $line = $_;
+            $logger->info("alert received: '$line'");
+            my $data = $parser->parse($line);
+            unless($data) {
+                $logger->warn("unknown input: $line ");
+                next;
+            }
+            while (my ($type, $value) = each %{$data->{events}}) {
+                $client->notify( event_add => ( $data->{date}, $data->{srcip}, $type, $value ));
+            }
 
-        #Stop running if parent is no longer alive
-        unless(is_parent_alive()) {
-            $logger->error("Parent is no longer running shutting down");
-            $running = 0;
-        }
+            #Stop running if parent is no longer alive
+            unless(is_parent_alive()) {
+                $logger->error("Parent is no longer running shutting down");
+                $running = 0;
+            }
 
-        #reload all cached configs after each iteration
-        pf::config::cached::ReloadConfigs();
+            #reload all cached configs after each iteration
+            pf::config::cached::ReloadConfigs();
+        };
+        if($@) {
+            $logger->error($@);
+        }
     }
 
     $logger->trace("$$ shutting down");

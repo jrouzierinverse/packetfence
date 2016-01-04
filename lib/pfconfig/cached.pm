@@ -32,7 +32,6 @@ use warnings;
 
 use IO::Socket::UNIX qw( SOCK_STREAM );
 use JSON::MaybeXS;
-use pfconfig::timeme;
 use pfconfig::log;
 use pfconfig::util qw($undef_element);
 use pfconfig::constants;

@@ -35,7 +35,6 @@ use JSON::MaybeXS;
 use pfconfig::manager;
 use Data::Dumper;
 use Time::HiRes;
-use pfconfig::timeme;
 use List::MoreUtils qw(first_index);
 use File::Basename qw(basename);
 use Getopt::Std;
@@ -46,7 +45,6 @@ use Sereal::Encoder;
 use Errno qw(EINTR EAGAIN);
 use bytes;
 use pf::util::networking qw(send_data_with_length);
-$pfconfig::timeme::VERBOSE = 0;
 our $RUNNING = 1;
 
 my %args = (

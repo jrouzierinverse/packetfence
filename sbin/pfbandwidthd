@@ -268,17 +268,6 @@ sub pcap_filter_from_local_interfaces {
   return "( host ". join(" or host ", @addresses) . " )";
 }
 
-sub dropprivs {
-  my ($user, $group) = @_;
-  my $uid = getpwnam($user);
-  my $gid = getgrnam($group);
-
-  $logger->logdie("Can't drop privileges") if (!$uid || !$gid);
-
-  POSIX::setgid($gid) or $logger->logdie("Can't setgid to $group: $!");;
-  POSIX::setuid($uid) or $logger->logdie("Can't setuid to $user: $!");
-}
-
 sub normal_sighandler {
     $RUNNING = 0;
     deletepid("pfbandwidthd");

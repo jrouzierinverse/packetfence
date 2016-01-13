@@ -16,7 +16,7 @@ Util functions for pf services
 use strict;
 use warnings;
 use base qw(Exporter);
-our @EXPORT = qw(daemonize createpid deletepid);
+our @EXPORT = qw(daemonize createpid deletepid dropprivs);
 use Log::Log4perl::Level;
 use pf::log;
 use pf::log::trapper;
@@ -83,6 +83,23 @@ sub deletepid {
     my $pidfile = $var_dir . "/run/$pname.pid";
     unlink($pidfile) || return (-1);
     return (1);
+}
+
+=head2 dropprivs
+
+Drop priviledge of process
+
+=cut
+
+sub dropprivs {
+    my ($user, $group) = @_;
+    my $uid    = getpwnam($user);
+    my $gid    = getgrnam($group);
+    my $logger = get_logger;
+    $logger->logdie("Can't drop privileges user '$user' or group '$group' is invalid") if (!$uid || !$gid);
+
+    POSIX::setgid($gid) or $logger->logdie("Can't setgid to $group: $!");
+    POSIX::setuid($uid) or $logger->logdie("Can't setuid to $user: $!");
 }
 
 

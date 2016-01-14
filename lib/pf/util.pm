@@ -1053,10 +1053,11 @@ Will validate that a certificate has not expired
 =cut
 
 sub cert_has_expired {
-    my ($path) = @_;
+    my ($path, $time) = @_;
+    $time //= time;
     my $cert = Crypt::OpenSSL::X509->new_from_file($path);
     my $expiration = str2time($cert->notAfter);
-    return time > $expiration;
+    return $time > $expiration;
 }
 
 =item cert_is_self_signed

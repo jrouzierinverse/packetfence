@@ -128,7 +128,9 @@ our $running = 1;
 
 # standard signals and daemonize
 daemonize($PROGRAM_NAME) if ($daemonize);
+print join("\n",@ip_addr),"\n";
 our $PARENT_PID = $$;
+dropprivs("pf", "pf");
 
 
 sub start {

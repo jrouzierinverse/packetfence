@@ -90,6 +90,8 @@ my ($line, $sid, $descr, $priority, $date, $srcmac, $srcip, $dstip);
 daemonize($PROGRAM_NAME) if ($daemonize);
 our $PARENT_PID = $$;
 
+dropprivs("pf", "pf");
+
 $logger->info("initialized");
 
 my %CHILDREN;

@@ -166,7 +166,7 @@ sub run_child {
         $SIG{CHLD} = "DEFAULT";
         $IS_CHILD = 1;
         _run_child($id);
-    } 
+    }
 }
 
 populate_ipset_cache($IPSET_SESSION);
@@ -178,6 +178,7 @@ my $ns = new Net::DNS::Nameserver(
     Verbose      => 0
     ) || die "couldn't create nameserver object\n";
 
+dropprivs("pf", "pf");
 
 sub _run_child {
     my ($id) = @_;

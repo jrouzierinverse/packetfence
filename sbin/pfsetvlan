@@ -153,6 +153,7 @@ my $fh = new File::Tail(
 );
 
 daemonize($PROGRAM_NAME) if $daemonize;
+dropprivs("pf", "pf");
 
 $logger->info("Process started");
 

@@ -2507,6 +2507,10 @@ msgstr ""
 msgid "Internal Sources"
 msgstr ""
 
+# conf/documentation.conf (maintenance.cert_check_maintenance_interval)
+msgid "Interval at which Packetfence checks certificates"
+msgstr ""
+
 # conf/documentation.conf (maintenance.acct_maintenance_interval)
 msgid "Interval at which Packetfence runs accounting maintenance"
 msgstr ""
@@ -7488,6 +7492,10 @@ msgstr "Maintenance"
 # conf/documentation.conf
 msgid "maintenance.acct_maintenance_interval"
 msgstr "Acct Maintenance Interval"
+
+# conf/documentation.conf
+msgid "maintenance.cert_check_maintenance_interval"
+msgstr ""
 
 # conf/documentation.conf
 msgid "maintenance.inline_accounting_maintenance_interval"

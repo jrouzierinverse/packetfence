@@ -1290,6 +1290,11 @@ acct_maintenance_interval=60s
 #
 # Interval at which Packetfence runs the polling enforcement on the provisioners
 provisioning_compliance_poll_interval=300s
+#
+# maintenance.cert_check_maintenance_interval
+#
+# Interval at which Packetfence checks certificates
+cert_check_maintenance_interval=1D
 
 [active_active]
 #

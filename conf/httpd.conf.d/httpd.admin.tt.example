@@ -20,6 +20,12 @@
   <IfModule !mod_mime.c>
     LoadModule mime_module /usr/lib/apache2/modules/mod_mime.so
   </IfModule>
+  <IfModule !mod_proxy_html.c>
+    LoadModule proxy_html_module /usr/lib/apache2/modules/mod_proxy_html.so
+  </IfModule>
+  <IfModule !mod_xml2enc.c>
+    LoadModule xml2enc_module /usr/lib/apache2/modules/mod_xml2enc.so
+  </IfModule>
   <IfModule !mod_proxy.c>
     LoadModule proxy_module /usr/lib/apache2/modules/mod_proxy.so
   </IfModule>
@@ -56,6 +62,12 @@
   </IfModule>
   <IfModule !mod_proxy.c>
     LoadModule proxy_module modules/mod_proxy.so
+  </IfModule>
+  <IfModule !mod_proxy_html.c>
+    LoadModule proxy_html_module modules/mod_proxy_html.so
+  </IfModule>
+  <IfModule !mod_xml2enc.c>
+    LoadModule xml2enc_module modules/mod_xml2enc.so
   </IfModule>
   <IfModule !proxy_http.c>
     LoadModule proxy_http_module modules/mod_proxy_http.so
@@ -125,13 +137,26 @@ FcgidIPCDir [% var_dir %]/run/[% name %]
     SSLEngine on
     Include  [% var_dir %]/conf/ssl-certificates.conf
     SSLProxyEngine on
-    PerlModule pf::web::admin
-    PerlTransHandler pf::web::admin->proxy_portal
     ProxyRequests off
     ProxyPreserveHost on
     ProxyVia off
     Alias /static [% install_dir %]/html/pfappserver/root/static
     Alias / [% install_dir %]/html/pfappserver/script/pfappserver_fastcgi.pl/
+
+    #Html cleanup for the portal preview
+    ProxyPass /portal_preview/ http://[% preview_ip %]/
+    ProxyHTMLURLMap http://[% server_name %] /portal_preview
+    ProxyHTMLURLMap https://[% server_name %] /portal_preview
+    ProxyPassReverse /portal_preview/ https://[% server_name %]/
+
+    <Location /portal_preview/>
+        ProxyPassReverse /
+        ProxyHTMLEnable On
+        ProxyHTMLLogVerbose On
+        ProxyHTMLURLMap / /portal_preview/
+        RequestHeader unset Accept-Encoding
+    </Location>
+
     <Location / >
         Options ExecCGI
         AddHandler fcgid-script .pl

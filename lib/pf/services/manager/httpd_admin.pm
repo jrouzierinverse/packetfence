@@ -14,13 +14,22 @@ pf::services::manager::httpd_admin
 use strict;
 use warnings;
 use Moo;
-use Template;
+use List::MoreUtils qw(uniq);
+use pf::config;
 
 extends 'pf::services::manager::httpd';
 
 has '+name' => (default => sub { 'httpd.admin' } );
 
 has '+shouldCheckup' => ( default => sub { 0 }  );
+
+sub additionalVars {
+    my ($self) = @_;
+    my %vars;
+    my @interfaces = uniq (@internal_nets, @portal_ints );
+    $vars{preview_ip} = $interfaces[0]->{Tip};
+    return %vars;
+}
 
 =head1 AUTHOR
 

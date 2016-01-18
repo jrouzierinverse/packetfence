@@ -5,6 +5,9 @@
   <IfModule !mod_perl.c>
     LoadModule perl_module /usr/lib/apache2/modules/mod_perl.so
   </IfModule>
+  <IfModule !mod_fcgid.c>
+    LoadModule fcgid_module /usr/lib/apache2/modules/mod_fcgid.so
+  </IfModule>
   <IfModule !mod_log_config.c>
     LoadModule log_config_module /usr/lib/apache2/modules/mod_log_config.so
   </IfModule>
@@ -35,6 +38,9 @@
 <IfDefine rhel>
   <IfModule !mod_perl.c>
     LoadModule perl_module modules/mod_perl.so
+  </IfModule>
+  <IfModule !mod_fcgid.c>
+    LoadModule fcgid_module modules/mod_fcgid.so
   </IfModule>
   <IfModule !mod_log_config.c>
     LoadModule log_config_module modules/mod_log_config.so
@@ -108,6 +114,8 @@ ServerAdmin [% server_admin %]
 NameVirtualHost [% vhost %]:[% ports.admin %]
 NameVirtualHost [% vhost %]:[% ports.pf_status %]
 
+FcgidIPCDir [% var_dir %]/run/[% name %]
+
 <VirtualHost [% vhost %]:[% ports.admin %] >
     ServerName [% server_name %]
     DocumentRoot  [% install_dir %]/html/pfappserver/lib
@@ -123,9 +131,10 @@ NameVirtualHost [% vhost %]:[% ports.pf_status %]
     ProxyPreserveHost on
     ProxyVia off
     Alias /static [% install_dir %]/html/pfappserver/root/static
+    Alias / [% install_dir %]/html/pfappserver/script/pfappserver_fastcgi.pl/
     <Location / >
-         SetHandler modperl
-         PerlResponseHandler pfappserver
+        Options ExecCGI
+        AddHandler fcgid-script .pl
     </Location>
     <Location /static >
          SetHandler default-handler

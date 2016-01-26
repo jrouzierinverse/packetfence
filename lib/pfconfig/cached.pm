@@ -36,28 +36,10 @@ use pfconfig::timeme;
 use pfconfig::log;
 use pfconfig::util qw($undef_element);
 use pfconfig::constants;
-use Sereal::Encoder;
-use Sereal::Decoder;
+use Sereal qw(sereal_decode_with_object);
+use pf::Sereal qw($ENCODER $DECODER);
 use Time::HiRes qw(stat time);
 use bytes;
-
-=head2 ENCODER
-
-The encoder for the communications with pfconfig
-See CLONE where this needs to be recreated
-
-=cut
-
-our $ENCODER = Sereal::Encoder->new;
-
-=head2 DECODER
-
-The decoder for the communications with pfconfig
-See CLONE where this needs to be recreated
-
-=cut
-
-our $DECODER = Sereal::Decoder->new;
 
 =head2 new
 
@@ -271,17 +253,6 @@ sub is_valid {
         $logger->info("Memory configuration is not valid anymore for key $what in local cached_hash");
         return 0;
     }
-}
-
-=head2 CLONE
-
-Called when cloning the module. Used to create new encoders, if not they'll be undefed
-
-=cut
-
-sub CLONE {
-    $ENCODER = Sereal::Encoder->new;
-    $DECODER = Sereal::Decoder->new;
 }
 
 =head1 AUTHOR

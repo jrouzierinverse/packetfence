@@ -24,7 +24,7 @@ use pfconfig::undef_element;
 use pfconfig::log;
 use pfconfig::constants;
 use IO::Socket::UNIX;
-use Sereal::Decoder;
+use pf::Sereal qw($DECODER);
 use Readonly;
 
 our @EXPORT_OK = qw(
@@ -59,10 +59,8 @@ sub fetch_decode_socket {
         Peer => $socket_path,
     );
 
-    my $decoder = Sereal::Decoder->new;
     my $response = fetch_socket($socket, $payload);
-    return $decoder->decode($response);
-
+    return $DECODER->decode($response);
 }
 
 sub parse_namespace {

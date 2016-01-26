@@ -14,8 +14,7 @@ pfconfig::backend::mysql
 
 use strict;
 use warnings;
-use Sereal::Encoder;
-use Sereal::Decoder;
+use pf::Sereal qw($DECODER $ENCODER);
 use DBI;
 use pfconfig::config;
 use Try::Tiny;
@@ -42,7 +41,7 @@ sub _get_db {
     eval {
         $db = DBI->connect( "DBI:mysql:database=$cfg->{db};host=$cfg->{host};port=$cfg->{port}",
             $cfg->{user}, $cfg->{pass}, { 'RaiseError' => 1 } );
-    }; 
+    };
     if($@) {
         $logger->error("Caught error $@ while connecting to database.");
         return undef;
@@ -72,7 +71,7 @@ sub get {
     my ( $self, $key ) = @_;
     my $logger = pfconfig::log::get_logger;
     my $db = $self->_get_db();
-    unless($db){ 
+    unless($db) {
         $self->_db_error();
         return undef;
     }
@@ -86,8 +85,7 @@ sub get {
     }
     my $element;
     while ( my $row = $statement->fetchrow_hashref() ) {
-        my $decoder = Sereal::Decoder->new;
-        $element = $decoder->decode( $row->{value} );
+        $element = $DECODER->decode($row->{value});
     }
     $db->disconnect();
     return $element;
@@ -103,12 +101,11 @@ sub set {
     my ( $self, $key, $value ) = @_;
     my $logger = pfconfig::log::get_logger;
     my $db = $self->_get_db();
-    unless($db){ 
+    unless($db) {
         $self->_db_error();
         return 0;
     }
-    my $encoder = Sereal::Encoder->new;
-    $value = $encoder->encode($value);
+    $value = $ENCODER->encode($value);
     my $result;
     eval {
         $result = $db->do( "REPLACE INTO keyed (id, value) VALUES(?,?)", undef, $key, $value );
@@ -130,7 +127,7 @@ Remove an element by key
 sub remove {
     my ( $self, $key ) = @_;
     my $db = $self->_get_db();
-    unless($db){ 
+    unless($db) {
         $self->_db_error();
         return 0;
     }
@@ -148,7 +145,7 @@ Clear out the backend
 sub clear {
     my ( $self ) = @_;
     my $db = $self->_get_db();
-    unless($db){ 
+    unless($db) {
         $self->_db_error();
         return 0;
     }
@@ -167,7 +164,7 @@ sub list {
     my ( $self ) = @_;
     my $logger = pfconfig::log::get_logger;
     my $db = $self->_get_db();
-    unless($db){
+    unless($db) {
         $self->_db_error();
         return ();
     }
@@ -195,7 +192,7 @@ sub list_matching {
     my ( $self, $expression ) = @_;
     my $logger = pfconfig::log::get_logger;
     my $db = $self->_get_db();
-    unless($db){
+    unless($db) {
         $self->_db_error();
         return ();
     }
@@ -212,8 +209,6 @@ sub list_matching {
     $db->disconnect();
     return @keys;
 }
-
-=back
 
 =head1 AUTHOR
 

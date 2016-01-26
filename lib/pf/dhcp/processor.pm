@@ -19,7 +19,6 @@ use Try::Tiny;
 use pf::client;
 use pf::constants;
 use pf::constants::dhcp qw($DEFAULT_LEASE_LENGTH);
-use pf::clustermgmt;
 use pf::config;
 use pf::config::cached;
 use pf::db;

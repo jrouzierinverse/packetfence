@@ -165,14 +165,3 @@ FcgidIPCDir [% var_dir %]/run/[% name %]
          SetHandler default-handler
     </Location>
 </VirtualHost>
-
-<VirtualHost [% vhost %]:[% ports.pf_status %] >
-    ServerName [% server_name %]
-    DocumentRoot  [% install_dir %]/html/pfappserver/lib
-    ErrorLog      [% install_dir %]/logs/httpd.admin.error
-    CustomLog   [% install_dir %]/logs/httpd.admin.access combined
-    AllowEncodedSlashes on
-    PerlModule pf::clustermgmt
-    PerlTransHandler pf::clustermgmt
-</VirtualHost>
-

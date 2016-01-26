@@ -30,7 +30,6 @@ BEGIN {
 }
 
 use pf::constants;
-use pf::clustermgmt;
 use pf::config;
 use pf::config::cached;
 use pf::util;

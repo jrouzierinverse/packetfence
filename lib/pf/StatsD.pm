@@ -108,10 +108,8 @@ Log timing information
 
 sub timing {
     my ( $self, $stats, $time, $sample_rate ) = @_;
-    $stats = $self->{hostname} . ".$stats";
     $time = ceil $time; # make sure it is at lease == 1
-    $stats =~ s/\Q$STATSD_DELIMITER\E/_/g;
-    $self->send( { $stats => "$time|ms" }, $sample_rate );
+    $self->_prep_and_send($stats, $time, 'ms', $sample_rate);
 }
 
 =item increment(STATS, SAMPLE_RATE)
@@ -122,8 +120,7 @@ Increment one of more stats counters.
 
 sub increment {
     my ( $self, $stats, $sample_rate ) = @_;
-    $stats =~ s/\Q$STATSD_DELIMITER\E/_/g;
-    $self->update( $stats, 1, $sample_rate );
+    $self->_prep_and_send($stats, 1, 'c', $sample_rate);
 }
 
 =item decrement(STATS, SAMPLE_RATE)
@@ -134,40 +131,48 @@ Decrement one of more stats counters.
 
 sub decrement {
     my ( $self, $stats, $sample_rate ) = @_;
-    $stats =~ s/\Q$STATSD_DELIMITER\E/_/g;
-    $self->update( $stats, -1, $sample_rate );
+    $self->_prep_and_send($stats, -1, 'c', $sample_rate);
 }
 
-=item update(STATS, DELTA, SAMPLE_RATE)
+=item gauge(STATS, GAUGE, SAMPLE_RATE)
 
-Update one of more stats counters by arbitrary amounts.
-
-=cut
-
-sub update {
-    my ( $self, $stats, $delta, $sample_rate ) = @_;
-    $delta = 1 unless defined $delta;
-    my %data;
-    if ( ref($stats) eq 'ARRAY' ) {
-        %data = map { "$self->{hostname}\.$_" => "$delta|c" }, @$stats;
-    }
-    else {
-        %data = ( "$self->{hostname}\.$stats" => "$delta|c" );
-    }
-    $self->send( \%data, $sample_rate );
-}
-
-=item gauge
-
-Set the gauge
+Set the gauge one or more stats gauge.
 
 =cut
 
 sub gauge {
     my ($self, $stats, $gauge, $sample_rate) = @_;
-    $stats = $self->{hostname} . ".$stats";
-    $stats =~ s/\Q$STATSD_DELIMITER\E/_/g;
-    $self->send( { $stats => "$gauge|g" }, $sample_rate );
+    $self->_prep_and_send($stats, $gauge, 'g', $sample_rate);
+}
+
+=item update(STATS, DELTA, SAMPLE_RATE)
+
+=cut
+
+sub update {
+    my ($self, $stats, $delta, $sample_rate) = @_;
+    $self->_prep_and_send($stats, $delta, 'c', $sample_rate);
+}
+
+=item _prep_and_send
+
+Normalize stats data and send
+
+=cut
+
+sub _prep_and_send {
+    my ($self, $stats, $number, $type, $sample_rate) = @_;
+    $stats = [$stats] if ref ($stats) ne 'ARRAY';
+    return unless @$stats;
+    my %data;
+    my $prefix = $self->{hostname} . ".";
+    my $value = "$number|$type";
+    foreach my $stat (@$stats) {
+        $stat =~ s/\Q$STATSD_DELIMITER\E/_/g;
+        my $key = "${prefix}${stat}";
+        $data{$key} = $value;
+    }
+    $self->send(\%data, $sample_rate);
 }
 
 =back

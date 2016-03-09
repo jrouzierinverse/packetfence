@@ -14,19 +14,31 @@ $(document).ready(function() {
     }
   });
 
-  // Toggle the disable state of the buttons and links when the user
-  // accepts or refuses the AUP
-  $("input[name='aup_signed']").each(function() {
-    $(this).on('change', function(event) {
-      var accepted = this.checked;
-      $('.btn').each(function() {
+  var on_change = function() {
+     var accepted = false;
+     $("input[type='checkbox']").each(function() {
+        var name = this.name;
+        accepted = false;
+        $("input[name='" + name + "']").each(function() {
+            if (this.checked) {
+                accepted = true;
+                return false;
+            }
+        });
+        return accepted;
+     });
+     $('.btn').each(function() {
         if (accepted)
           $(this).removeClass('disabled');
         else
           $(this).addClass('disabled');
       });
+  };
+  // Toggle the disable state of the buttons and links when the user
+  // accepts or refuses the AUP checkboxes
+  $("input[type='checkbox']").each(function() {
+    $(this).on('change', on_change);
     });
-  });
 });
 </script>
 
@@ -56,6 +68,21 @@ $(document).ready(function() {
             [%# The space below is intententionnal %]
             <div class="notmobile"><label><input name="aup_signed" type="checkbox" /> [% i18n("I accept the terms") %]</label></div>
             <div class="mobile"><input name="aup_signed" type="checkbox" />[% i18n("I have read and accept the terms") %]</div>
+
+            <div class="notmobile"><label><input name="custom_field_1" type="checkbox" /> [% i18n("Use an operating system that is supported by a reputable vendor (Windows, Mac OS, Linux, Android, iOS etc.)") %]</label></div>
+            <div class="mobile"><label><input name="custom_field_1" type="checkbox" /> [% i18n("Use an operating system that is supported by a reputable vendor (Windows, Mac OS, Linux, Android, iOS etc.)") %]</label></div>
+
+            <div class="notmobile"><label><input name="custom_field_2" type="checkbox" /> [% i18n("Choose a strong password that is required at startup.") %]</label></div>
+            <div class="mobile"><label><input name="custom_field_2" type="checkbox" /> [% i18n("Choose a strong password that is required at startup.") %]</label></div>
+
+            <div class="notmobile"><label><input name="custom_field_3" type="checkbox" /> [% i18n("Configure your system to received updates automatically.") %]</label></div>
+            <div class="mobile"><label><input name="custom_field_3" type="checkbox" /> [% i18n("Configure your system to received updates automatically.") %]</label></div>
+
+            <div class="notmobile"><label><input name="custom_field_4" type="checkbox" /> [% i18n("Install a reputable Anti-Malware package, configured to scan in real-time.") %]</label></div>
+            <div class="mobile"><label><input name="custom_field_4" type="checkbox" /> [% i18n("Install a reputable Anti-Malware package, configured to scan in real-time.") %]</label></div>
+
+            <div class="notmobile"><label><input name="custom_field_5" type="checkbox" /> [% i18n("Install a reputable firewall and configure to block all unsolicited incoming connections.") %]</label></div>
+            <div class="mobile"><label><input name="custom_field_5" type="checkbox" /> [% i18n("Install a reputable firewall and configure to block all unsolicited incoming connections.") %]</label></div>
           </div>
 
           [%# User / Pass %]
@@ -72,6 +99,7 @@ $(document).ready(function() {
 
           [% END %]
           [% FOREACH field IN mandatory_fields %]
+          [% NEXT IF field.match("custom_field_[1-5]") %]
           <div class="input">
             <span>[% i18n("$field") %]</span>
             <input class="field" name="[% field %]" type="text" value="[% c.stash.field | html %]" /><br/>

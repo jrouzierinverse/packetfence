@@ -1,0 +1,97 @@
+[% title = i18n("Login") %]
+[% INCLUDE header.html 
+    body_attributes = 'onload="$(\'#username\').focus();"';
+%]
+<main>		
+
+	<div class="container">
+    [%# Error %]
+    [% IF txt_auth_error.defined %]<div class="alert alert-danger">[% txt_auth_error %]</div>[% END %]
+    [% IF txt_validation_error.defined %]
+    <div class="alert alert-danger"><p>[% txt_validation_error %]</p></div>
+    [% END %]
+        <form name="login" method="post" action="/authenticate">
+            <input type="hidden" name="destination_url" value="[% destination_url %]" />
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-2">
+                        <label>Correo electrónico :</label>
+                    </div>
+                    <div class="col-md-4">						
+                        <input name="username" type="text" class="form-control" />
+                    </div>
+                    <div class="col-md-6 col-md-offset-6"></div>
+                </div>
+            </div>				
+            <div class="form-group">
+                <div class="row">
+                <div class="col-md-2">						
+                <label>Contraseña :</label>
+                </div>
+                <div class="col-md-4">						
+                <input name="password" type="password" class="form-control"  />
+                </div>	
+                <div class="col-md-6 col-md-offset-6"></div>
+                </div>				
+            </div>	
+            <br />
+		
+						
+            <div class="checkbox">
+                <label>
+                    <input name="aup_signed" type="checkbox" class="i_checkbox" />						 
+                </label>					
+                <label>
+                    <!--Acepto <a href="#" data-toggle="modal" data-target="#terminos" >términos y condiciones</a> -->
+                    Aceptar los <a href='#' data-toggle="modal" data-target='#terminos'>términos y condiciones</a>
+                </label>
+            </div>
+		
+            <div class="form-group">
+                  <button class="btn pull-right" type="submit">Entrar</button>
+            </div>	
+        </form>
+    </div>		
+</main>		
+
+		<div id="terminos" class="modal fade in" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title text-center">TÉRMINOS Y CONDICIONES USO DE LA RED WI-FI</h4>
+                </div>
+                <div class="modal-body terminos">							
+				<p>	
+				Al acceder y utilizar la red WI-FI del Instituto Tecnológico IDAT (en adelante IDAT), usted declara que ha leído, entendido y acepta los términos y condiciones para su uso. Si usted no está de acuerdo con estas condiciones, se recomienda que no utilice este servicio. 
+				La red WI-FI está destinada para el uso exclusivo de los miembros de la comunidad universitaria. Quienes no pertenezcan a estos grupos no tienen permitido el uso de este servicio. 
+				</p><p>
+				Al ingresar a cualquier red WI-Fi  usted acepta y reconoce que existen riesgos potenciales a través de este servicio. Cuando utilice una red WI-FI debe tener cuidado con los datos que transmite, como por ejemplo transmitir datos como: contraseñas, número de tarjeta de crédito u otra información personal a través de redes WI-FI. IDAT no puede y no garantiza la privacidad y seguridad de sus datos y de las comunicaciones al utilizar este servicio. 
+				</p><p>
+				IDAT no garantiza el nivel de desempeño de la red WI-FI. El servicio puede no estar disponible o ser limitado en cualquier momento y por cualquier motivo, incluyendo emergencias, fallo del enlace, problemas en equipos de red, interferencias o fuerza de la señal. IDAT no se responsabiliza por datos, mensajes o páginas perdidas, no guardadas o retrasos por interrupciones o problemas de rendimiento con el servicio.
+				</p><p>
+				IDAT, puede establecer límites de uso, suspender el servicio o bloquear ciertos comportamientos, acceso a ciertos servicios o dominios para proteger la red universitaria de fraudes o actividades que atenten contra las leyes nacionales o internacionales. 
+				</p><p>
+				NO se podrá utilizar la red WI-FI con los siguientes fines:
+				</p>
+				<ol>
+				<li>Transmisión de contenido fraudulento, difamatorio, obsceno, ofensivo o de vandalismo, insultante o acosador, sea éste material o mensajes.</li>
+				<li>Interceptar, recopilar o almacenar datos sobre terceros sin su conocimiento o consentimiento. Escanear o probar la vulnerabilidad de equipos, sistemas o segmentos de red. Enviar mensajes no solicitados (spam), virus, o ataques internos o externos a la red universitaria.</li>
+				<li>Obtener acceso no autorizado a equipos, sistemas o programas tanto al interior de la red universitaria como fuera de ella. Tampoco podrá utilizar la red WI-FI para obtener, manipular y compartir cualquier archivo de tipo musical o filmográfico, sin tener los derechos de propiedad intelectual.</li>
+				<li>Transmitir, copiar y/o descargar cualquier material que viole cualquier ley. Esto incluye entre otros: material con derecho de autor, pornografía infantil, material amenazante u obsceno, o material protegido por secreto comercial o patentes.</li>
+				<li>Dañar equipos, sistemas informáticos o redes y/o perturbar el normal funcionamiento de la red. Ser usada con fines de lucro, actividades comerciales o ilegales, por ejemplo hacking. Ser utilizada para crear y/o la colocar un virus informático o malware en la red.</li>
+				</ol>
+				<p>
+				El incumplimiento de estas condiciones será considerado una falta  grave según lo establecido en el  Reglamento del Estudiante de IDAT- Capítulo X -  Punto 47  inciso q.
+				</p>
+				<p>
+				Conforme la Ley No. 29733 y su Reglamento, mediante el llenado y/o firma de la ficha, autorizo de forma expresa y por tiempo indefinido que mis Datos Personales (“Datos”) sean almacenados, sistematizados y utilizados por el Instituto Tecnológico IDAT (“IDAT”) con domicilio en Jr. Natalio Sánchez 125, Lima, para fines estadísticos, administrativos y de gestión comercial, incluyendo pero sin estar limitado a: invitaciones a cursos, talleres, charlas y otros eventos que UTP organice, auspicie o participe. Los Datos serán conservados en un banco de datos cuyo titular es IDAT, declaro conocer que para ejercer mis derechos como acceso, rectificación, cancelación y oposición sobre mis Datos puedo dirigirme al correo electrónico 
+				<a href="mailto:arco@grupoutp.edu.pe">arco@grupoutp.edu.pe</a>.</p>
+				</div>
+                <div class="modal-footer" style="text-align: center">                    
+                    <button type="button" class="btn " style="width: 100px" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+		</div>	
+[% INCLUDE footer.html %]

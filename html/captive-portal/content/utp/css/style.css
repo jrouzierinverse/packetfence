@@ -1,0 +1,50 @@
+*
+{
+	font-family: 'Arial Narrow';
+	color: gray;
+}
+
+
+.imgLogo
+{
+	width: 200px;	
+	margin: auto;
+}
+
+.page-header
+{
+	margin-top: 0px;
+	text-align: center;
+	padding: 10px;
+}
+
+.btn
+{
+	width: 200px;
+	background-color: #b01e31;
+	color: white;
+}
+
+.terminos
+{
+	height: 300px;
+	border: 1px solid gray;
+	padding: 50px;
+	overflow-y: scroll;
+	text-align: justify;
+	font-size: 10;
+}
+
+
+.terminos h1
+{
+	color:black;
+	text-align: center;
+	font-size: 12;
+}
+
+.i_checkbox
+{
+	width: 30px;
+	height: 30px;		
+}

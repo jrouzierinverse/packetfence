@@ -48,6 +48,7 @@ BEGIN {
         node_exist
         node_pid
         node_delete
+        node_forcedelete
         node_add
         node_add_simple
         node_attributes
@@ -429,6 +430,26 @@ sub node_delete {
     # TODO that limitation is arbitrary at best, we need to resolve that.
     if ( defined( pf::locationlog::locationlog_view_open_mac($mac) ) ) {
         $logger->warn("$mac has an open locationlog entry. Node deletion prohibited");
+        return 0;
+    }
+
+    db_query_execute(NODE, $node_statements, 'node_delete_sql', $mac) || return (0);
+    $logger->info("node $mac deleted");
+    return (1);
+}
+
+#
+# delete and return 1
+#
+sub node_forcedelete {
+    my $timer = pf::StatsD::Timer->new;
+    my ($mac) = @_;
+    my $logger = get_logger();
+
+    $mac = clean_mac($mac);
+
+    if ( !node_exist($mac) ) {
+        $logger->error("delete of non-existent node '$mac' failed");
         return 0;
     }
 

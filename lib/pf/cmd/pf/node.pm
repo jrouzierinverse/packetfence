@@ -5,7 +5,7 @@ pf::cmd::pf::node add documentation
 
 =head1 SYNOPSIS
 
- pfcmd node <add|count|view|edit|delete> mac [assignments]
+ pfcmd node <add|count|view|edit|delete|forcedelete> mac [assignments]
 
 manipulate node entries
 
@@ -18,6 +18,7 @@ examples:
   pfcmd node add 00:01:02:03:04:05 status="reg" pid="admin"
   pfcmd node edit 00:01:02:03:04:05 status="reg"
   pfcmd node delete 00:01:02:03:04:05
+  pfcmd node forcedelete 00:01:02:03:04:05
 
 =head1 DESCRIPTION
 
@@ -274,6 +275,29 @@ sub action_delete {
     return $EXIT_SUCCESS;
 }
 
+=head2 action_forcedelete
+
+handles 'pfcmd node forcedelete' command
+
+=cut
+
+sub action_forcedelete {
+    my ($self) = @_;
+    my ($mac) = $self->action_args;
+    unless (node_exist($mac)) {
+        print STDERR "node '$mac' does not exist\n";
+        return $EXIT_FAILURE;
+    }
+    my $r = node_forcedelete($mac);
+    unless($r) {
+        my $error = "Cannot delete node $mac check error logs for further details";
+        print STDERR $error,"\n";
+        get_logger->error($error);
+        return $EXIT_FAILURE;
+    }
+    return $EXIT_SUCCESS;
+}
+
 =head2 parse_delete
 
 parse and validate the arguments for 'pfcmd node delete' command
@@ -284,6 +308,17 @@ sub parse_delete {
     my ($self,@args) = @_;
     return unless @args == 1;
     return valid_mac($args[0]);
+}
+
+=head2 parse_forcedelete
+
+parse and validate the arguments for 'pfcmd node forcedelete' command
+
+=cut
+
+sub parse_forcedelete {
+    my ($self,@args) = @_;
+    return $self->parse_delete(@args);
 }
 
 =head2 _parse_attributes

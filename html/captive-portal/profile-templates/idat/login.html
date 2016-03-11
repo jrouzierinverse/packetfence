@@ -12,13 +12,17 @@
     [% END %]
         <form name="login" method="post" action="/authenticate">
             <input type="hidden" name="destination_url" value="[% destination_url %]" />
+            <input type="hidden" name="domain" />
             <div class="form-group">
                 <div class="row">
                     <div class="col-md-2">
                         <label>Correo electrónico :</label>
                     </div>
                     <div class="col-md-4">						
-                        <input name="username" type="text" class="form-control" />
+                        <div class="input-group">																
+                            <input name="username" type="email" class="form-control" />
+                            <span class="input-group-addon addon">@idat.edu.pe</span>
+                        </div>
                     </div>
                     <div class="col-md-6 col-md-offset-6"></div>
                 </div>

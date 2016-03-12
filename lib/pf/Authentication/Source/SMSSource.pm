@@ -91,7 +91,7 @@ List of mandatory fields for this source
 =cut
 
 sub mandatoryFields {
-    return qw(email phone mobileprovider);
+    return qw(phone mobileprovider);
 }
 
 =head1 AUTHOR

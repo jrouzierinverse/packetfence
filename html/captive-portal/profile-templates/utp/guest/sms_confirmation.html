@@ -1,0 +1,31 @@
+[% title = i18n("Confirm Mobile Phone Number") %]
+[% INCLUDE header.html
+    body_attributes = 'onload="$(\'pin\').focus();"';
+%]
+
+		<main>		
+			<div class="container">
+                [% IF txt_auth_error.defined %]
+                    <div class="alert alert-danger">[% txt_auth_error %]</div>
+                [% END %]
+                <form method="post" action="[% post_uri %]" id="loginForm">
+                    <input type="hidden" name="destination_url" value="[% destination_url %]" />
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label>Ingrese el PIN de confirmación :</label>
+                            </div>
+                            <div class="col-md-4">
+                                <input name="pin" type="text" class="form-control" />
+                            </div>
+                            <div class="col-md-5 col-md-offset-5"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn pull-right">Activar</button>
+                    </div>				
+                </div>	
+            </form>
+		</main>		
+
+[% INCLUDE footer.html %]

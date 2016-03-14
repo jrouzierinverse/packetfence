@@ -1,0 +1,42 @@
+[% title = i18n("PacketFence Registration System") %]
+[% INCLUDE header.html
+    body_attributes = 'onload="$(\'firstfield\').focus();"';
+%]
+<main>		
+    <div class="container">			
+        [% IF txt_validation_error.defined %]
+            <div class="error">[% txt_validation_error %]</div>
+        [% END %]
+                
+        <form method="post" action="[% post_uri %]">
+          <input type="hidden" name="destination_url" value="[% destination_url %]" />
+          <div class="form-group">
+          <div class="row">
+            <div class="col-md-2">						
+                <label>Número de celular : </label>
+            </div>
+            <div class="col-md-4">						
+                <input type="tel" name="phone" class="form-control"  />
+                <input type="hidden" name="aup_signed" value="on" />
+            </div>					
+            <select name="mobileprovider">
+              <option value="">[% i18n("Select your provider") %]</option>
+                  [% FOREACH carrier IN sms_carriers %]<option value="[% carrier.id %]"[% IF mobileprovider == carrier.id %] selected[% END %]>[% carrier.name %]</option>
+                  [% END %]
+            </select>
+            <div class="col-md-6 col-md-offset-6"></div>
+          </div>				
+        <p>
+        En breve recibirá un mensaje con un código de activación.
+        </p>
+            
+        <div class="form-group">
+            <button type="submit" name="by_sms" value="1" class="btn pull-right">Siguiente</button>
+        </div>				
+        </form>
+    </div>
+</main>		
+
+[% INCLUDE footer.html 
+    dont_show_help = is_preregistration
+%]

@@ -30,7 +30,7 @@ $(document).ready(function() {
 </script>
 
 <div id="about" class="container">
-    <img src="/content/images/unlock.png" alt="Access granted" />
+    <img class="img-responsive img-locked" src="/content/images/unlock.png" alt="Access granted" />
     [% IF auto_redirect == "enabled" %]
     <p id="toReplace">[% i18n("Your network access is currently being enabled. Once network connectivity is established you will be automatically redirected.") %]</p>
     [% ELSE %]

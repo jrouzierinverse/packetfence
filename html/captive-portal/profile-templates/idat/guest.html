@@ -12,11 +12,7 @@
 					<div class="col-md-4">						
 					<input name="phone" type="tel" class="form-control"  />
 					</div>				
-                  <select name="mobileprovider">
-                    <option value="">[% i18n("Select your provider") %]</option>
-                        [% FOREACH carrier IN sms_carriers %]<option value="[% carrier.id %]"[% IF mobileprovider == carrier.id %] selected[% END %]>[% carrier.name %]</option>
-                        [% END %]
-                  </select>
+                    <input type="hidden" name="mobileprovider" value="[% sms_carriers.0.id %]" />
                   <input type="hidden" value="on" name="aup_signed"/>
 					<div class="col-md-6 col-md-offset-6"></div>
 				</div>

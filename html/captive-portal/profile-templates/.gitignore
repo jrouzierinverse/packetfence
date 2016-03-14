@@ -4,5 +4,7 @@
 !.gitignore
 !idat
 !idat/*
+!idat/*/*
 !utp
 !utp/*
+!utp/*/*

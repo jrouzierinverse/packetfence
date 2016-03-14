@@ -1,0 +1,33 @@
+[%INCLUDE header.html %]
+		<main>		
+			<div class="container">						
+        [%# Error %]
+        [% IF txt_validation_error.defined %]<div class="alert alert-danger"><p>[% txt_validation_error %]</p></div>[% END %]
+        <form method="post" action="[% post_uri %]">
+				<div class="form-group">
+					<div class="row">
+					<div class="col-md-2">						
+					<label>Número de celular :</label>
+					</div>
+					<div class="col-md-4">						
+					<input name="phone" type="tel" class="form-control"  />
+					</div>				
+                  <select name="mobileprovider">
+                    <option value="">[% i18n("Select your provider") %]</option>
+                        [% FOREACH carrier IN sms_carriers %]<option value="[% carrier.id %]"[% IF mobileprovider == carrier.id %] selected[% END %]>[% carrier.name %]</option>
+                        [% END %]
+                  </select>
+                  <input type="hidden" value="on" name="aup_signed"/>
+					<div class="col-md-6 col-md-offset-6"></div>
+				</div>
+				<br />
+				<div>					
+					En breve recibirá un mensaje con un código de activación.
+				</div>				
+				<div class="form-group">
+					<button type="submit" name="by_sms" value="Siguiente" class="btn pull-right">Siguiente</button>										
+				</div>				
+        </form>
+			</div>	
+		</main>		
+[%INCLUDE footer.html %]

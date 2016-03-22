@@ -121,3 +121,21 @@ h1,h2,h3,h4,h5,h6
 .img-locked {
     margin:auto;
 }
+
+#netdetect {
+    margin:auto;
+}
+
+#internet-detection {
+    text-align: center;
+}
+
+#PBdone {
+    text-align: center;
+}
+
+#PBouter {
+    text-align: center;
+    margin:auto;
+}
+

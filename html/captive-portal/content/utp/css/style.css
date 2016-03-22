@@ -56,3 +56,20 @@
 .img-locked {
     margin:auto;
 }
+
+#netdetect {
+    margin:auto;
+}
+
+#internet-detection {
+    text-align: center;
+}
+
+#PBdone {
+    text-align: center;
+}
+
+#PBouter {
+    text-align: center;
+    margin:auto;
+}

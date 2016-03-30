@@ -307,8 +307,6 @@ sub accounting {
         if($isStop){
             #handle radius floating devices
             $self->_handleAccountingFloatingDevices($switch, $mac, $port);
-            #Close old locationlog
-            locationlog_update_end_mac($mac);
         }
 
         # On accounting stop/update, check the usage duration of the node

@@ -6,6 +6,7 @@
      ]
      cssFiles = [
         'css/bootstrapSwitch'
+        'app/chosen.min'
         ] -%]
     <div class="container">
       [% INCLUDE configurator/tracker.inc %]

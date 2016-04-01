@@ -22,6 +22,7 @@
         'app/bootstrap-datepicker',
         'app/bootstrap-timepicker',
         'css/bootstrapSwitch',
+        'app/chosen.min'
         ] -%]
 
 <style type="text/css">

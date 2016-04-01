@@ -39,6 +39,7 @@
         'admin/config/switches',
         'admin/config/portal_modules',
         'admin/config/violations',
+        'app/chosen.min',
         ] -%]
 
 <style type="text/css">

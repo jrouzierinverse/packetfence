@@ -124,7 +124,6 @@ SwitchView.prototype.readSwitch = function(e) {
     loader.show();
     section.fadeTo('fast', 0.5);
     modal.empty();
-    $('.chzn-drop').remove(); // fixes a chzn bug with optgroups
     this.switches.get({
         url: $(e.target).attr('href'),
         always: function() {
@@ -134,9 +133,9 @@ SwitchView.prototype.readSwitch = function(e) {
         },
         success: function(data) {
             modal.append(data);
-            modal.find('.chzn-select').chosen();
-            modal.find('.chzn-deselect').chosen({allow_single_deselect: true});
             modal.one('shown', function() {
+                modal.find('.chzn-select').chosen();
+                modal.find('.chzn-deselect').chosen({allow_single_deselect: true});
                 var checkbox;
                 modal.find(':input:visible').first().focus();
                 // Update state of uplinks field

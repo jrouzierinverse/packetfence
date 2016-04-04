@@ -1,7 +1,7 @@
 [%  jsFiles = [
         'app/bootstrap-datepicker',
         'app/bootstrap-timepicker',
-        'app/chosen.jquery.min',
+        'app/chosen.jquery',
         'app/jquery-ui',
         'app/jquery.ba-hashchange',
         'app/raphael/raphael-min',

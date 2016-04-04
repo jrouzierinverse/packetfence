@@ -5,7 +5,7 @@
         'app/bootstrap-timepicker',
         'app/client/fineuploader',
         'app/client/jquery-plugin',
-        'app/chosen.jquery.min',
+        'app/chosen.jquery',
         'app/jquery.ba-hashchange',
         'app/pf-bootstrap-swap-class',
         'admin/configuration',

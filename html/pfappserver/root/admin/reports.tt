@@ -10,7 +10,7 @@
         'app/bootstrap-timepicker',
         'app/jquery.ba-hashchange',
         'admin/config/items',
-        'app/chosen.jquery.min',
+        'app/chosen.jquery',
         'js/bootstrapSwitch',
         'js/node',
         'js/user',

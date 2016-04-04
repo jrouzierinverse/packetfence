@@ -6,9 +6,9 @@ $(function() { // DOM ready
         modal.empty();
         modal.append(data);
         modal.find('.switch').bootstrapSwitch();
-        modal.find('.chzn-select').chosen();
-        modal.find('.chzn-deselect').chosen();
         modal.one('shown', function() {
+            modal.find('.chzn-select').chosen();
+            modal.find('.chzn-deselect').chosen();
             $('#actions').trigger('change');
         });
         $('.trigger option').each(function(elem){

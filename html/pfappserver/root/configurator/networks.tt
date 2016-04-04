@@ -1,5 +1,5 @@
 [% jsFiles = [
-        'app/chosen.jquery.min',
+        'app/chosen.jquery',
         'configurator/networks',
         'js/interface',
         'js/bootstrapSwitch',

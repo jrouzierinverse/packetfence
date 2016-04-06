@@ -35,6 +35,7 @@ use Time::HiRes qw(time);
 use Try::Tiny;
 use MIME::Lite;
 use Encode qw(encode);
+use Bytes::Random::Secure();
 
 =head1 CONSTANTS
 
@@ -388,6 +389,9 @@ generate proper activation code. Created to encapsulate flexible hash types.
 sub _generate_activation_code {
     my (%data) = @_;
     my $logger = get_logger();
+    if ($data{type} eq 'sms') {
+        return _generate_sms_activation_code(\%data);
+    }
 
     if ($HASH_FORMAT == $SIMPLE_MD5) {
         my $code;
@@ -413,6 +417,25 @@ sub _generate_activation_code {
     } else {
         $logger->warn("Hash format unknown, couldn't generate activation code");
     }
+}
+
+=head2 _generate_sms_activation_code
+
+=cut
+
+sub _generate_sms_activation_code {
+    my ($data) = @_;
+    my $random = Bytes::Random::Secure->new(
+        Bits        => 64,
+        NonBlocking => 1,
+    );
+    my $code;
+    while (!defined($code)) {
+        $code = $random->string_from('0123456789', 6);
+        $code = "$SIMPLE_MD5:". $code;
+        $code = undef if (view_by_code($code));
+    }
+    return $code;
 }
 
 =head2 _unpack_activation_code

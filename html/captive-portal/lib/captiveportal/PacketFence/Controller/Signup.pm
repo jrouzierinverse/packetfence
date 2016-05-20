@@ -414,7 +414,7 @@ sub doSmsSelfRegistration : Private {
     $c->forward(Authenticate => 'setRole');
 
     my ( $auth_return, $err, $code ) =
-      pf::activation::sms_activation_create_send( $mac, $pid, $phone, $profile->getName, $mobileprovider );
+      pf::activation::sms_activation_create_send( $mac, $pid, $phone, $profile->getName, $mobileprovider, normalize_time($source->expires_in) );
 
     unless ($auth_return) {
         $self->validationError( $c, $err );

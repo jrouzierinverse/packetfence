@@ -346,7 +346,7 @@ Returns the activation code
 =cut
 
 sub create {
-    my ($mac, $pid, $pending_addr, $type, $portal, $provider_id) = @_;
+    my ($mac, $pid, $pending_addr, $type, $portal, $provider_id, $expire_in) = @_;
     my $logger = get_logger();
 
     # invalidate older codes for the same MAC / contact_info
@@ -362,8 +362,10 @@ sub create {
         'carrier_id' => $provider_id,
     );
 
+    $expire_in //= $EXPIRATION;
+
     # caculate activation code expiration
-    $data{'expiration'} = POSIX::strftime("%Y-%m-%d %H:%M:%S", localtime(time + $EXPIRATION));
+    $data{'expiration'} = POSIX::strftime("%Y-%m-%d %H:%M:%S", localtime(time + $expire_in));
 
     # generate activation code
     $data{'activation_code'} = _generate_activation_code(%data);

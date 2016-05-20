@@ -51,6 +51,7 @@ use pf::factory::provisioner;
 use pf::SwitchFactory;
 use pf::radius_audit_log;
 use pf::StatsD;
+use pf::activation;
 
 pf::SwitchFactory::preLoadModules();
 
@@ -215,6 +216,9 @@ sub registertasks  {
     );
     register_task(
         'update node online stats', 'online_node_count_interval', \&update_node_online_stats
+    );
+    register_task(
+        'activation expiration task', 'activation_expiration_interval', \&activation_expiration
     );
 }
 
@@ -464,6 +468,14 @@ sub update_node_online_stats {
     } else {
         get_logger->error("Error updating online nodes count");
     }
+}
+
+=head2 activation_expiration
+
+=cut
+
+sub activation_expiration {
+    pf::activation::expire($Config{maintenance}{activation_expiration_batch},$Config{maintenance}{activation_expiration_timeout});
 }
 
 =head1 AUTHOR

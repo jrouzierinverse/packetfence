@@ -573,14 +573,14 @@ Create and send PIN code
 #The attribute %info is only meant to be used for debugging purposes.
 
 sub sms_activation_create_send {
-    my ($mac, $pid, $phone_number, $portal, $provider_id, %info) = @_;
+    my ($mac, $pid, $phone_number, $portal, $provider_id, $expires_in, %info) = @_;
     my $logger = get_logger();
 
     # Strip non-digits
     $phone_number =~ s/\D//g;
 
     my ($success, $err) = ($TRUE, 0);
-    my $activation_code = create($mac, $pid, $phone_number, 'sms', $portal, $provider_id);
+    my $activation_code = create($mac, $pid, $phone_number, 'sms', $portal, $provider_id, $expires_in);
     if (defined($activation_code)) {
       unless (send_sms($activation_code, %info)) {
         ($success, $err) = ($FALSE, $GUEST::ERROR_CONFIRMATION_SMS);

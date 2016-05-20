@@ -42,6 +42,12 @@ has_field 'create_local_account' => (
     },
 );
 
+has_field 'expires_in' => (
+    type => 'Duration',
+    label => 'Expires',
+    default => '31D',
+);
+
 =head1 METHODS
 
 =head2 options_sms_carriers

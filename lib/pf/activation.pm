@@ -175,6 +175,10 @@ sub activation_db_prepare {
         qq [ UPDATE activation SET status = ? WHERE mac IS NULL AND pid = ? AND contact_info = ? AND status = ? ]
     );
 
+    $activation_statements->{'activation_expire_sql'} = get_db_handle()->prepare(
+        qq [ UPDATE activation SET status = '$EXPIRED' WHERE expiration <= NOW() and status = '$UNVERIFIED' LIMIT ? ]
+    );
+
 
     $activation_statements->{'activation_has_entry_sql'} = get_db_handle()->prepare(
         qq [ SELECT 1 FROM activation WHERE mac = ? AND expiration >= NOW() AND status = ? AND type = ? ]
@@ -627,7 +631,33 @@ sub send_sms {
     return $result;
 }
 
-# TODO: add an expire / cleanup sub
+=head2 expire
+
+Expire old activation records
+
+=cut
+
+sub expire {
+    my ($batch, $timelimit) = @_;
+    my $logger = get_logger();
+
+    $logger->debug("Looking at expired violations... batching $batch timelimit $timelimit");
+    my $start_time = time;
+    my $end_time;
+    my $rows_processed = 0;
+    while (1) {
+        my $query = db_query_execute(ACTIVATION, $activation_statements, 'activation_expire_sql', $batch) || return (0);
+        my $rows = $query->rows;
+        $rows_processed += $rows;
+        $query->finish;
+        $end_time = time;
+        $logger->trace(
+            sub {"processed $rows_processed activation record during activation expiration ($start_time $end_time) "});
+        last if $rows == 0 || ((time - $start_time) > $timelimit);
+    }
+    $logger->info("processed $rows_processed activation record during activation expiration ($start_time $end_time) ");
+    return (1);
+}
 
 =head1 AUTHOR
 

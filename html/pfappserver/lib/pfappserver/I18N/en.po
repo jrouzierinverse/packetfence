@@ -7503,6 +7503,18 @@ msgid "maintenance.acct_maintenance_interval"
 msgstr "Acct Maintenance Interval"
 
 # conf/documentation.conf
+msgid "maintenance.activation_expiration_batch"
+msgstr "Activation Expiration Batch"
+
+# conf/documentation.conf
+msgid "maintenance.activation_expiration_interval"
+msgstr "Activation Expiration Interval"
+
+# conf/documentation.conf
+msgid "maintenance.activation_expiration_timeout"
+msgstr "Activation Expiration Timeout"
+
+# conf/documentation.conf
 msgid "maintenance.inline_accounting_maintenance_interval"
 msgstr "Inline Accounting Maintenance Interval"
 

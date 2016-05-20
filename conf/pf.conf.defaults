@@ -1300,6 +1300,21 @@ provisioning_compliance_poll_interval=300s
 #
 # Interval at which PacketFence updates the online node count
 online_node_count_interval=15m
+#
+# maintenance.activation_expiration_interval
+#
+# Interval at which PacketFence expires activation off
+activation_expiration_interval=60s
+#
+# maintenance.activation_expiration_batch
+#
+# activation expiration batch
+activation_expiration_batch=1000
+#
+# maintenance.activation_expiration_timeout
+#
+# activation expiration timeout
+activation_expiration_timeout=10s
 
 [active_active]
 #

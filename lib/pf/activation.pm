@@ -176,7 +176,12 @@ sub activation_db_prepare {
     );
 
     $activation_statements->{'activation_expire_sql'} = get_db_handle()->prepare(
-        qq [ UPDATE activation SET status = '$EXPIRED' WHERE expiration <= NOW() and status = '$UNVERIFIED' LIMIT ? ]
+        qq [ UPDATE activation SET status = '$EXPIRED' WHERE expiration <= ? and status = '$UNVERIFIED' ORDER BY code_id expiration LIMIT ? ]
+    );
+
+
+    $activation_statements->{'activation_expired_pending_nodes_sql'} = get_db_handle()->prepare(
+        qq [ UPDATE node JOIN (SELECT mac from activation WHERE expiration <= ? and status = '$UNVERIFIED' ORDER BY code_id LIMIT ? ) as a ON node.mac = a.mac SET node.status = 'unreg'  WHERE node.status = 'pending' and a.mac IS NOT NULL ]
     );
 
 
@@ -640,22 +645,28 @@ Expire old activation records
 sub expire {
     my ($batch, $timelimit) = @_;
     my $logger = get_logger();
+    my $now = db_now();
 
     $logger->debug("Looking at expired violations... batching $batch timelimit $timelimit");
     my $start_time = time;
     my $end_time;
     my $rows_processed = 0;
+    my $node_rows_processed = 0;
+    my $rows;
     while (1) {
-        my $query = db_query_execute(ACTIVATION, $activation_statements, 'activation_expire_sql', $batch) || return (0);
-        my $rows = $query->rows;
-        $rows_processed += $rows;
-        $query->finish;
+        pf::db::db_transaction_execute( sub {
+            my $expired_nodes_query = db_query_execute(ACTIVATION, $activation_statements, 'activation_expired_pending_nodes_sql', $now, $batch) || die "Error running activation_expired_pending_nodes_sql";
+            $node_rows_processed += $expired_nodes_query->rows;
+            my $query = db_query_execute(ACTIVATION, $activation_statements, 'activation_expire_sql', $now, $batch) || die "Error running activation_expire_sql";
+            $rows = $query->rows;
+            $rows_processed += $rows;
+        });
         $end_time = time;
         $logger->trace(
-            sub {"processed $rows_processed activation record during activation expiration ($start_time $end_time) "});
+            sub {"processed $rows_processed activation record and $node_rows_processed nodes during activation expiration ($start_time $end_time) "});
         last if $rows == 0 || ((time - $start_time) > $timelimit);
     }
-    $logger->info("processed $rows_processed activation record during activation expiration ($start_time $end_time) ");
+    $logger->info("processed $rows_processed activation record and $node_rows_processed nodes during activation expiration ($start_time $end_time) ");
     return (1);
 }
 

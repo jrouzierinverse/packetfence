@@ -362,6 +362,39 @@ sub db_cancel_current_query {
     }
 }
 
+=item db_transaction_execute
+
+Intended to run db_query_execute commands in a transactional mode
+
+=cut
+
+sub db_transaction_execute {
+    my ( $sub ) = @_;
+    my $logger = get_logger();
+
+    my $dbh = get_db_handle();
+    unless ( $dbh->{AutoCommit} ) {
+        $logger->error("Transaction already in place");
+        return;
+    }
+    $dbh->{AutoCommit} = 0;
+    if ( $dbh->{AutoCommit} ) {
+        $logger->error("Unable to start transaction");
+        return;
+    }
+
+    my $rc = eval {
+        $sub->();
+        $dbh->commit;
+    };
+    if ( $@ ) {
+        $dbh->rollback;
+    }
+
+    $dbh->{AutoCommit} = 1;
+    return $rc;
+}
+
 =back
 
 =head1 AUTHOR

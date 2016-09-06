@@ -169,6 +169,8 @@ sub authenticate {
             $self->app->flash->{error} = "Reusing 802.1x credentials but not able to find the source for username $username, did you define the source on the portal ?";
         }
     } else {
+        $username = $self->clean_username($username);
+
         # validate login and password
         my ( $return, $message, $source_id ) =
           pf::authentication::authenticate( { 'username' => $username, 'password' => $password, 'rule_class' => $Rules::AUTH }, @sources );
@@ -247,6 +249,14 @@ sub display_challenge {
     });
 }
 
+=head2 clean_username
+
+=cut
+
+sub clean_username {
+    my ($self, $username) = @_;
+    return $username;
+}
 
 =head2 allowed_urls_auth_module
 

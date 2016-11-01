@@ -18,6 +18,7 @@ use Apache2::RequestRec ();
 use pf::config::cached;
 use pf::StatsD qw($statsd);
 use pf::db;
+use pf::LDAP;
 use pf::CHI;
 use pf::SwitchFactory();
 
@@ -59,6 +60,7 @@ Close connections to avoid any sharing of sockets
 sub post_config {
     my ($class, $conf_pool, $log_pool, $temp_pool, $s) = @_;
     pf::StatsD->closeStatsd;
+    pf::LDAP::CLONE();
     db_disconnect();
     preloadSwitches();
     pf::CHI->clear_memoized_cache_objects;

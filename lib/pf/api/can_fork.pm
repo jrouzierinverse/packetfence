@@ -18,6 +18,7 @@ use strict;
 use warnings;
 use pf::log;
 use pf::db;
+use pf::LDAP;
 use pf::util::webapi;
 use POSIX;
 use Moo;
@@ -47,6 +48,7 @@ sub notify {
     my $pid;
     if (pf::api->shouldFork($method)) {
         pf::db::db_disconnect();
+        pf::LDAP::CLONE();
         $pid = fork;
         unless (defined $pid) {
             $logger->error("Error fork $!");

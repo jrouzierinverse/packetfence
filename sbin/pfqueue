@@ -41,6 +41,7 @@ use Config::IniFiles;
 use pf::SwitchFactory;
 use pf::pfqueue::consumer::redis;
 use pf::api;
+use pf::LDAP;
 use pf::client;
 pf::client::setClient("pf::api::can_fork");
 use threads;
@@ -197,6 +198,7 @@ run all run_tasks
 =cut
 
 sub run_tasks {
+    pf::LDAP::CLONE();
     db_disconnect();
     my $mask = POSIX::SigSet->new(POSIX::SIGCHLD());
     sigprocmask(SIG_BLOCK, $mask);

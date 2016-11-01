@@ -42,6 +42,7 @@ use pf::iplog;
 use pf::locationlog;
 use pf::node;
 use pf::db;
+use pf::LDAP;
 use pf::services;
 use pf::traplog;
 use pf::util;
@@ -351,6 +352,7 @@ run all runtasks
 
 sub runtasks {
     db_disconnect();
+    pf::LDAP::CLONE();
     my $mask = POSIX::SigSet->new(POSIX::SIGCHLD());
     sigprocmask(SIG_BLOCK,$mask);
     while(@REGISTERED_TASKS) {

@@ -49,17 +49,22 @@ our ( @ISA, @EXPORT );
 @EXPORT = qw(%ConfigCluster @cluster_servers @cluster_hosts $cluster_enabled $host_id $CLUSTER);
 
 our ($cluster_enabled, %ConfigCluster, @cluster_servers, @cluster_hosts);
+our $CLUSTER = "CLUSTER";
 tie %ConfigCluster, 'pfconfig::cached_hash', 'config::Cluster';
 tie @cluster_servers, 'pfconfig::cached_array', 'resource::cluster_servers';
 tie @cluster_hosts, 'pfconfig::cached_array', 'resource::cluster_hosts';
-$cluster_enabled = sub {
-    my $cfg = Config::IniFiles->new( -file => $cluster_config_file );
-    return 0 unless($cfg);
-    my $mgmt_ip = $cfg->val('CLUSTER', 'management_ip');
-    defined($mgmt_ip) && valid_ip($mgmt_ip) ? 1 : 0 ;
-}->();
+$cluster_enabled = do {
+    my $enabled = 0;
+    my $cfg = Config::IniFiles->new(-file => $cluster_config_file);
+    if ($cfg) {
+        my $mgmt_ip = $cfg->val($CLUSTER, 'management_ip');
+        if (defined($mgmt_ip) && valid_ip($mgmt_ip)) {
+            $enabled = 1;
+        }
+    }
+    $enabled
+};
 
-our $CLUSTER = "CLUSTER";
 
 our $host_id = hostname();
 

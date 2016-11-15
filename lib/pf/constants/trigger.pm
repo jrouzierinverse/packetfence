@@ -48,14 +48,14 @@ Readonly::Scalar our $TRIGGER_ID_PROVISIONER => 'check';
 Readonly::Scalar our $TRIGGER_TYPE_SWITCH => 'switch';
 Readonly::Scalar our $TRIGGER_TYPE_SWITCH_GROUP => 'switch_group';
 
-Readonly::Scalar our $SURICATA_CATEGORIES => sub {
+Readonly::Scalar our $SURICATA_CATEGORIES => do {
     my %map;
     my @categories = split("\n", read_file($suricata_categories_file));
     foreach my $category (@categories){
         $map{$category} = $category;
     }
-    return \%map;
-}->();
+    \%map
+};
 
 Readonly::Scalar our $TRIGGER_MAP => {
   $TRIGGER_TYPE_INTERNAL => {

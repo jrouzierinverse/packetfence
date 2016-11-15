@@ -21,7 +21,7 @@ use Log::Any::Adapter;
 Log::Any::Adapter->set('Log4perl');
 use Net::LDAP;
 use Net::LDAPS;
-use POSIX::AtFork;
+#use POSIX::AtFork;
 # available encryption
 use constant {
     NONE => "none",
@@ -132,7 +132,7 @@ sub CLONE {
     $CHI_CACHE->clear;
 }
 
-POSIX::AtFork->add_to_child(\&CLONE);
+#POSIX::AtFork->add_to_child(\&CLONE);
 
 =head1 AUTHOR
 

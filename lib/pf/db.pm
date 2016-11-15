@@ -26,7 +26,7 @@ use pf::config;
 use pfconfig::cached_hash;
 use pf::StatsD::Timer;
 use pf::util::statsd qw(called);
-use POSIX::AtFork;
+#use POSIX::AtFork;
 
 # Constants
 use constant MAX_RETRIES  => 3;
@@ -61,7 +61,7 @@ sub AT_FORK_CHILD {
     }
 }
 
-POSIX::AtFork->add_to_child(\&AT_FORK_CHILD);
+#POSIX::AtFork->add_to_child(\&AT_FORK_CHILD);
 
 END {
     $DBH->disconnect if $DBH;

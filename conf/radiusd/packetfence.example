@@ -14,13 +14,9 @@ server packetfence {
 authorize {
 
 	# Add in PacketFence specific configuration
+    packetfence-rpc-variables
 	update {
 		&request:FreeRADIUS-Client-IP-Address := "%{Packet-Src-IP-Address}"
-		&control:PacketFence-RPC-Server = ${rpc_host}
-		&control:PacketFence-RPC-Port = ${rpc_port}
-		&control:PacketFence-RPC-User = ${rpc_user}
-		&control:PacketFence-RPC-Pass = ${rpc_pass}
-		&control:PacketFence-RPC-Proto = ${rpc_proto}
 		&control:Tmp-Integer-0 := "%l"
 		&control:PacketFence-Request-Time := 0
 	}
@@ -253,13 +249,9 @@ accounting {
 	rewrite_calling_station_id
 	rewrite_called_station_id
 	# Add in PacketFence specific configuration
+    packetfence-rpc-variables
 	update {
 		&request:FreeRADIUS-Client-IP-Address := "%{Packet-Src-IP-Address}"
-		&control:PacketFence-RPC-Server = ${rpc_host}
-		&control:PacketFence-RPC-Port = ${rpc_port}
-		&control:PacketFence-RPC-User = ${rpc_user}
-		&control:PacketFence-RPC-Pass = ${rpc_pass}
-		&control:PacketFence-RPC-Proto = ${rpc_proto}
 	}
 	#
 	#  Log traffic to an SQL database.
@@ -306,13 +298,9 @@ session {
 post-auth {
 
 	# Add in PacketFence configuration
+    packetfence-rpc-variables
 	update {
 		&request:FreeRADIUS-Client-IP-Address := "%{Packet-Src-IP-Address}"
-		&control:PacketFence-RPC-Server = ${rpc_host}
-		&control:PacketFence-RPC-Port = ${rpc_port}
-		&control:PacketFence-RPC-User = ${rpc_user}
-		&control:PacketFence-RPC-Pass = ${rpc_pass}
-		&control:PacketFence-RPC-Proto = ${rpc_proto}
 	}
 	#
 	#  For EAP-TTLS and PEAP, add the cached attributes to the reply.

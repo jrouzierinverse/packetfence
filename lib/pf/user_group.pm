@@ -27,6 +27,7 @@ BEGIN {
         user_group_db_prepare
         user_group_delete
         user_group_add
+        user_group_try_add
         user_group_insert_or_update
         user_group_view
         user_group_count_all
@@ -74,6 +75,9 @@ sub user_group_db_prepare {
     $user_group_statements->{'user_group_add_sql'} = $dbh->prepare(
         qq[ INSERT INTO user_group ( $FIELD_LIST ) VALUES ( $INSERT_LIST ) ]);
 
+    $user_group_statements->{'user_group_try_add_sql'} = $dbh->prepare(
+        qq[ INSERT IGNORE INTO user_group ( $FIELD_LIST ) VALUES ( $INSERT_LIST ) ]);
+
     $user_group_statements->{'user_group_view_sql'} = $dbh->prepare(
         qq[ SELECT user_group_id, $FIELD_LIST FROM user_group WHERE user_group_id = ? ]);
 
@@ -108,6 +112,18 @@ Add a user_group entry
 =cut
 
 sub user_group_add {
+    my %data = @_;
+    db_query_execute(USER_GROUP, $user_group_statements, 'user_group_add_sql', @data{@FIELDS}) || return (0);
+    return (1);
+}
+
+=head2 $success = user_group_try_add(%args)
+
+Try to add a user_group entry
+
+=cut
+
+sub user_group_try_add {
     my %data = @_;
     db_query_execute(USER_GROUP, $user_group_statements, 'user_group_add_sql', @data{@FIELDS}) || return (0);
     return (1);

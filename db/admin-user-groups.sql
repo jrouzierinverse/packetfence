@@ -14,6 +14,7 @@ CREATE TABLE user_group (
 CREATE TABLE person_user_group (
   `person_user_group_id` int NOT NULL PRIMARY KEY AUTO_INCREMENT,
   `user_group_id` int NOT NULL,
-  `pid` VARCHAR(255) NOT NULL
+  `pid` VARCHAR(255) NOT NULL,
+  UNIQUE(`user_group_id`, `pid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

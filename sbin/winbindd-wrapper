@@ -53,43 +53,11 @@ our @TASKS_RUN;
 our $ALARM_RECV = 0;
 
 my $logger = get_logger( $PROGRAM_NAME );
-my $old_child_sigaction = POSIX::SigAction->new;
 
-POSIX::sigaction(
-    &POSIX::SIGCHLD,
-    POSIX::SigAction->new(
-        'child_sighandler' , POSIX::SigSet->new(), &POSIX::SA_NODEFER
-    ),
-    $old_child_sigaction
-) or die("winbindd-wrapper could not set SIGCHLD handler: $!");
-
-POSIX::sigaction(
-    &POSIX::SIGALRM,
-    POSIX::SigAction->new(
-        'alarm_sighandler', POSIX::SigSet->new(), &POSIX::SA_NODEFER
-    )
-) or die("winbindd-wrapper could not set SIGALRM handler: $!");
-
-POSIX::sigaction(
-    &POSIX::SIGINT,
-    POSIX::SigAction->new(
-        'normal_sighandler' , POSIX::SigSet->new(), &POSIX::SA_NODEFER
-    )
-) or die("winbindd-wrapper could not set SIGINT handler: $!");
-
-POSIX::sigaction(
-    &POSIX::SIGTERM,
-    POSIX::SigAction->new(
-        'normal_sighandler' , POSIX::SigSet->new(), &POSIX::SA_NODEFER
-    )
-) or die("winbindd-wrapper could not set SIGTERM handler: $!");
-
-POSIX::sigaction(
-    &POSIX::SIGUSR1,
-    POSIX::SigAction->new(
-        'usr1_sighandler' , POSIX::SigSet->new(), &POSIX::SA_NODEFER
-    )
-) or die("winbindd-wrapper could not set SIGUSR1 handler: $!");
+$SIG{CHLD} = \&child_sighandler;
+$SIG{ALRM} = \&alarm_sighandler;
+$SIG{INT}  = \&normal_sighandler;
+$SIG{TERM} = \&normal_sighandler;
 
 my %args;
 getopts( 'dhvr', \%args );
@@ -116,14 +84,14 @@ our $PARENT_PID = $$;
 
 
 sub start {
-    run_all_winbindd();
     while($running) {
+        run_all_winbindd();
         pause;
     }
 }
 
+setup();
 start();
-
 cleanup();
 
 END {
@@ -139,6 +107,18 @@ exit(0);
 
 =head1 SUBROUTINES
 
+
+=head2 setup
+
+setup
+
+=cut
+
+sub setup {
+    @REGISTERED_TASKS = keys %ConfigDomain;
+}
+
+
 =head2 cleanup
 
 cleans after children
@@ -146,7 +126,11 @@ cleans after children
 =cut
 
 sub cleanup {
-    signal_children('INT');
+    kill_and_wait_for_children('INT', 20);
+    my @left_over = values %CHILDREN;
+    if (@left_over) {
+        $logger->error("The following winbindd processes did not die " . join(", ", @left_over));
+    }
 }
 
 =head2 signal_children
@@ -179,7 +163,8 @@ run all run_all_winbindd
 sub run_all_winbindd {
     my $mask = POSIX::SigSet->new(POSIX::SIGCHLD());
     sigprocmask(SIG_BLOCK,$mask);
-    foreach my $id (keys(%ConfigDomain)) {
+    while(@REGISTERED_TASKS) {
+        my $id = pop @REGISTERED_TASKS;
         run_winbindd($id);
     }
     sigprocmask(SIG_UNBLOCK,$mask);
@@ -202,15 +187,12 @@ sub run_winbindd {
     if($pid) {
         $CHILDREN{$pid} = $id;
     } elsif ($pid == 0) {
-        POSIX::sigaction(
-            &POSIX::SIGCHLD,
-            $old_child_sigaction,
-        ) or die("winbindd-wrapper could not set SIGCHLD handler: $!");
+        $SIG{CHLD} = "DEFAULT";
         $IS_CHILD = 1;
         Log::Log4perl::MDC->put('tid', $$);
         unless(exec("sudo chroot $chroot_path $binary -s $config_file -l $log_directory --foreground")) {
             $logger->error("Failed to start the winbindd process $id");
-            exit 1;
+            exit 127;
         }
     } else {
     }
@@ -228,9 +210,7 @@ sub child_sighandler {
         my $child = waitpid(-1, WNOHANG);
         last unless $child > 0;
         my $id = delete $CHILDREN{$child};
-        if($running) {
-            run_winbindd($id);
-        }
+        push @REGISTERED_TASKS, $id;
     }
 }
 
@@ -252,6 +232,22 @@ the alarm signal handler
 
 sub alarm_sighandler {
     $ALARM_RECV = 1;
+}
+
+=head2 kill_and_wait_for_children
+
+signal children and waits for them to exit process
+
+=cut
+
+sub kill_and_wait_for_children {
+    my ($signal,$waittime) = @_;
+    signal_children($signal);
+    $ALARM_RECV = 0;
+    alarm $waittime;
+    while (((keys %CHILDREN) != 0 ) && !$ALARM_RECV) {
+        pause;
+    }
 }
 
 =head2 usr1_sighandler

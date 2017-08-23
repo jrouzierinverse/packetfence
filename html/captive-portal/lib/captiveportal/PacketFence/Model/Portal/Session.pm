@@ -114,7 +114,7 @@ sub ACCEPT_CONTEXT {
     my $redirectURL;
     my $uri = $request->uri;
     my $options = {
-        last_uri => $c->request->path
+        last_uri => "/" . $c->request->path
     };
     my $mgmt_ip = $management_network->{'Tvip'} || $management_network->{'Tip'} if $management_network;
 

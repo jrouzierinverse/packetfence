@@ -107,35 +107,29 @@ sub ACCEPT_CONTEXT {
     my $previous_model = $c->session->{$class};
     my $request       = $c->request;
     my $r = $request->{'env'}->{'psgi.input'};
-    return $previous_model if(defined($previous_model) && $previous_model->{options}->{in_uri_portal} && !($r->can('pnotes') && defined ($r->pnotes('last_uri') ) ) );
+    return $previous_model if(defined($previous_model));# && $previous_model->{options}->{in_uri_portal} && !($r->can('pnotes') && defined ($r->pnotes('last_uri') ) ) );
     my $model;
     my $remoteAddress = $request->address;
     my $forwardedFor  = $request->{'env'}->{'HTTP_X_FORWARDED_FOR_PACKETFENCE'} ||  $request->{'env'}->{'HTTP_X_FORWARDED_FOR'};
     my $redirectURL;
     my $uri = $request->uri;
-    my $options;
+    my $options = {
+        last_uri => $c->request->path
+    };
     my $mgmt_ip = $management_network->{'Tvip'} || $management_network->{'Tip'} if $management_network;
 
     if( $r->can('pnotes') && defined ( my $last_uri = $r->pnotes('last_uri') )) {
-        $options = {
-            'last_uri' => $last_uri,
-            'in_uri_portal' => 1,
-        };
+        $options->{'last_uri'} = $last_uri;
+        $options->{'in_uri_portal'} = 1;
     } elsif ( $c->action && $c->controller->isa('captiveportal::Controller::Activate::Email') && $c->action->name eq 'code' ) {
         my $code = $c->request->arguments->[0];
         my $data = view_by_code("1:".$code);
-        $options = {
-            'portal' => $data->{portal},
-        };
+        $options->{'portal'} = $data->{portal};
     } elsif ( $forwardedFor && $mgmt_ip && ( $forwardedFor =~  $mgmt_ip) ) {
         if (defined($request->param('PORTAL'))) {
-            $options = {
-                'portal' => $request->param('PORTAL'),
-            };
+            $options->{'portal'} = $request->param('PORTAL');
         } elsif (defined(my $cookie = $request->cookie("PF_PORTAL"))) {
-            $options = {
-                'portal' => $cookie->value,
-            };
+            $options->{'portal'} = $cookie->value;
         }
     }
 

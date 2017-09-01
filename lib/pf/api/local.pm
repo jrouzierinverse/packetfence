@@ -1,4 +1,5 @@
 package pf::api::local;
+
 =head1 NAME
 
 pf::api::local local client for pf::api
@@ -17,8 +18,10 @@ To avoid circular dependencies pf::api needs to be included before consuming thi
 use strict;
 use warnings;
 use pf::db;
+use pf::log;
 use Moo;
 
+our $logger = get_logger();
 
 =head2 call
 
@@ -27,7 +30,8 @@ calls the pf api
 =cut
 
 sub call {
-    my ($self,$method,@args) = @_;
+    my ($self, $method, @args) = @_;
+    $logger->trace("Handling api method $method");
     return pf::api->$method(@args);
 }
 
@@ -38,7 +42,8 @@ calls the pf api ignoring the return value
 =cut
 
 sub notify {
-    my ($self,$method,@args) = @_;
+    my ($self, $method, @args) = @_;
+    $logger->trace("Handling api method $method");
     eval {
         pf::api->$method(@args);
     };

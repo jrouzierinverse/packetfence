@@ -114,6 +114,7 @@ sub process_next_job {
             if (ref($item) eq 'ARRAY') {
                 my $type = $item->[0];
                 my $args = $item->[1];
+                $logger->trace("Handling task pf::task::$type");
                 eval {
                     "pf::task::$type"->doTask($args);
                 };

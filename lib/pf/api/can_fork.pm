@@ -33,6 +33,7 @@ calls the pf api
 
 sub call {
     my ($self,$method,@args) = @_;
+    $logger->trace("Handling api method $method");
     pf::util::webapi::add_mac_to_log_context(\@args);
     return pf::api->$method(@args);
 }
@@ -54,11 +55,12 @@ sub notify {
             return;
         }
         if ($pid) {
-            $logger->debug("Fork $method off");
+            $logger->trace("Fork $method off");
             return;
         }
         Log::Log4perl::MDC->put( 'tid', $$ );
     }
+    $logger->trace("Handling api method $method");
     pf::util::webapi::add_mac_to_log_context(\@args);
     eval {pf::api->$method(@args);};
     if ($@) {

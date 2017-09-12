@@ -11,6 +11,7 @@ Form definition to create or update a LDAP user source.
 =cut
 
 use pf::Authentication::Source::LDAPSource;
+use pfappserver::Form::Field::DynamicList;
 use HTML::FormHandler::Moose;
 extends 'pfappserver::Form::Config::Source';
 with 'pfappserver::Base::Form::Role::Help', 'pfappserver::Base::Form::Role::InternalSource';
@@ -21,11 +22,19 @@ our $META = pf::Authentication::Source::LDAPSource->meta;
 # Form fields
 has_field 'host' =>
   (
+   'type' => 'DynamicList',
+    'label' => 'Host',
+    'do_label' => 1,
+    'required' => 1,
+    'sortable'=> 1,
+    'num_when_empty' => 1,
+  );
+has_field 'host.contains' =>
+  (
    type => 'Text',
    label => 'Host',
-   element_class => ['input-small'],
-   element_attr => {'placeholder' => '127.0.0.1'},
-   default => $META->get_attribute('host')->default,
+   pfappserver::Form::Field::DynamicList::child_options(),
+   'do_label' => 0,
   );
 has_field 'port' =>
   (
@@ -145,6 +154,21 @@ sub validate {
             $self->field('password')->add_error('Please specify a password.');
         }
     }
+}
+
+=head2 getSourceArgs
+
+
+=cut
+
+sub getSourceArgs {
+    my ($self) = @_;
+    my $args = $self->SUPER::getSourceArgs();
+    my $host = $args->{host} // '';
+    if (ref($host) eq 'ARRAY') {
+        $args->{host} = join(',', @$host);
+    }
+    return $args;
 }
 
 =head1 COPYRIGHT

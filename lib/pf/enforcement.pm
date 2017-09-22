@@ -163,7 +163,7 @@ sub _vlan_reevaluation {
             $cluster_deauth = 1;
         }
         else {
-            $client = pf::api::queue->new(queue => 'general');
+            $client = pf::api::queue->new(queue => 'desassociate');
             $cluster_deauth = 0;
         }
         my %data = (

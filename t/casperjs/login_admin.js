@@ -31,12 +31,12 @@ casper.test.begin('Packetfence Admin Login Test', number_of_tests, function suit
     });
 
     // Just wait for a half second for the page to be loaded from the form submit
-    casper.waitForSelector("i.icon-user.icon-white", function() {}, function() {}, 500);
+    casper.waitForSelector("i.icon-user-circle.icon-white", function() {}, function() {}, 500);
 
     casper.then(function() {
         test.assertTitle("Administrator - PacketFence");
         if(is_password_valid ) {
-            test.assertExists("i.icon-user.icon-white", "We are logged in");
+            test.assertExists("i.icon-user-circle.icon-white", "We are logged in");
             test.assertUrlMatch(/admin\/status/, "We are on the status page");
         } else {
             test.assertExists("div.alert.alert-error");

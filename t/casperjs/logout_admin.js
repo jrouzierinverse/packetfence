@@ -23,11 +23,11 @@ casper.test.begin('Packetfence Admin Logout Test', number_of_tests, function sui
     });
 
     // Just wait for a half second for the page to be loaded from the form submit
-    casper.waitForSelector("i.icon-user.icon-white", function() {}, function() {}, 500);
+    casper.waitForSelector("i.icon-user-circle.icon-white", function() {}, function() {}, 500);
 
     casper.then(function() {
         test.assertTitle("Administrator - PacketFence");
-        test.assertExists("i.icon-user.icon-white");
+        test.assertExists("i.icon-user-circle.icon-white");
     });
 
     casper.thenOpen(base_url + "/admin/logout", function() {
@@ -35,7 +35,7 @@ casper.test.begin('Packetfence Admin Logout Test', number_of_tests, function sui
 
     casper.then(function() {
         test.assertTitle("Administrator - PacketFence");
-        test.assertDoesntExist("i.icon-user.icon-white");
+        test.assertDoesntExist(".icon-user-circle.icon-white");
     });
 
     casper.run(function() {

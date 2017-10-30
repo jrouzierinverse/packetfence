@@ -120,7 +120,7 @@ sub match {
         }
 
         my $unregdate = $result->{'unregdate'};
-        if (defined $unregdate) {
+        if (defined $unregdate && $unregdate ne '0000-00-00 00:00:00') {
             $action = pf::Authentication::Action->new({
                 type    => $Actions::SET_UNREG_DATE,
                 value   => $unregdate,

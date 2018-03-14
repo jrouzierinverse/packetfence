@@ -600,3 +600,25 @@ delay=30D
 #
 # SSL certificate(s) to be monitored
 certificates=/usr/local/pf/conf/ssl/server.pem,/usr/local/pf/raddb/certs/server.crt
+
+[example]
+#
+# type
+#
+# The type of task to perform
+type=example
+#
+# description
+#
+# The description of task to perform
+description=Example task
+#
+# status
+#
+# If the task example is enabled
+status=enabled
+#
+# interval
+#
+# At which interval to run the example pfmon task
+interval=12h

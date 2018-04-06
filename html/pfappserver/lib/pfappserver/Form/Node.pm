@@ -292,10 +292,7 @@ sub get_role_options {
     else {
         @roles = map {{value => $_->{category_id}, label => $_->{name}}} @all_roles;
     }
-    return ({
-        label => '', 
-        value => ''
-        }, @roles);
+    return ( @roles);
 }
 
 =head2 build_update_subfields

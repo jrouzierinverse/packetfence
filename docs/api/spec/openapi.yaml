@@ -569,46 +569,6 @@ components:
               $ref: '#/components/schemas/Node'
             type: array
         type: object
-    Password:
-      properties:
-        access_duration:
-          description: The access duration that should be given to a node when this
-            account is used is used to register a device
-          type: string
-        access_level:
-          description: The administrative access level that should be given to the
-            user when he logs into the administration interface
-          type: string
-        category:
-          description: The role that should be given to a node when this account is
-            used to register a device
-          type: string
-        expiration:
-          description: The date at which the password expires (becomes invalid)
-          type: string
-        login_remaining:
-          description: The amount of logins that the user has remaining. When null,
-            the user has unlimited logins
-          type: integer
-        password:
-          description: The password of the local account. When encrypted, it is prefixed
-            by the encryption type surrounded by brackets. For example "{ntlm}iosnuiofsauionsfdioun"
-          type: string
-        pid:
-          description: The username of the local account
-          type: string
-        sponsor:
-          description: Whether or not this account can be used to sponsor other users
-            via a SponsorEmail source
-          type: boolean
-        unregdate:
-          description: The unregistration date that should be given to a node when
-            this account is used to register a device
-          type: string
-        valid_from:
-          description: The date at which the password becomes valid
-          type: string
-      type: object
     RadiusAuditLog:
       properties:
         auth_status:
@@ -892,18 +852,6 @@ components:
           type: string
       required: []
       type: object
-    UserWithLinks:
-      allOf:
-      - $ref: '#/components/schemas/User'
-      - properties:
-          nodes_url:
-            description: link to the nodes of this user
-            type: string
-          password_url:
-            description: link to the password (local account) of this user. If there
-              is none, the value will be empty.
-            type: string
-        type: object
     UsersList:
       allOf:
       - $ref: '#/components/schemas/Iterable'
@@ -11243,83 +11191,35 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
-  /dhcp_option82/{mac}:
-    delete:
-      responses:
-        '204':
-          description: Deleted dhcp option 82 log entry
-      summary: Allows to delete a dhcp option 82 log entry
-    get:
-      parameters:
-      - description: The MAC address to fetch.
-        in: path
-        name: mac
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                properties:
-                  item:
-                    $ref: '#/components/schemas/DhcpOption82'
-                type: object
-          description: A specific dhcp option82 log.
-      summary: Returns a specific dhcp option 82 log by a MAC address.
-    patch:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DhcpOption82'
-        required: true
-      responses:
-        '200':
-          $ref: '#/components/responses/Message'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '422':
-          $ref: '#/components/responses/UnprocessableEntity'
-      summary: Allows to update parts of a dhcp option 82 log entry.
-    put:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DhcpOption82'
-        required: true
-      responses:
-        '200':
-          $ref: '#/components/responses/Message'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '422':
-          $ref: '#/components/responses/UnprocessableEntity'
-      summary: Allows to update a whole dhcp option 82 log entry.
   /dhcp_option82s:
+    description: pf::UnifiedApi::Controller::DhcpOption82s
     get:
-      description: The list of logs will be limited to 100 and a cursor will be returned
-        for iterating on other logs. Iteration is only needed if the nextCursor is
-        not an empty value.
+      description: List items
+      operationId: api.v1.DhcpOption82s.list
       parameters:
       - $ref: '#/components/parameters/cursor'
+      - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/fields'
+      - $ref: '#/components/parameters/sort'
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DhcpOption82List'
-          description: List of dhcp option 82 logs.
-      summary: Returns a list of dhcp option 82 logs.
+                $ref: '#/components/schemas/DhcpOption82sList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
     post:
+      description: Create an item
+      operationId: api.v1.DhcpOption82s.create
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/DhcpOption82'
-        required: true
       responses:
         '201':
           $ref: '#/components/responses/Created'
@@ -11329,7 +11229,6 @@ paths:
           $ref: '#/components/responses/Duplicate'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
-      summary: Creates a dhcp option 82 log entry.
   /dhcp_option82s/search:
     description: pf::UnifiedApi::Controller::DhcpOption82s
     post:
@@ -11784,18 +11683,17 @@ paths:
       summary: Login into the API and obtain a token
   /node/{node_id}:
     delete:
+      description: Remove an item
+      operationId: api.v1.Nodes.remove
+      parameters: []
       responses:
         '204':
-          description: Deleted node
-      summary: Allows to delete a node
+          description: Item deleted
+    description: pf::UnifiedApi::Controller::Nodes
     get:
-      parameters:
-      - description: The node ID to fetch
-        in: path
-        name: node_id
-        required: true
-        schema:
-          type: string
+      description: Get an item
+      operationId: api.v1.Nodes.get
+      parameters: []
       responses:
         '200':
           content:
@@ -11805,15 +11703,20 @@ paths:
                   item:
                     $ref: '#/components/schemas/Node'
                 type: object
-          description: A specific node
-      summary: Returns a specific node by its ID
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
     patch:
+      description: Update an item
+      operationId: api.v1.Nodes.update
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Node'
-        required: true
+        required: '1'
       responses:
         '200':
           $ref: '#/components/responses/Message'
@@ -11821,14 +11724,16 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
-      summary: Allows to update parts of a node
     put:
+      description: Replace an item
+      operationId: api.v1.Nodes.replace
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Node'
-        required: true
+        required: '1'
       responses:
         '200':
           $ref: '#/components/responses/Message'
@@ -11836,29 +11741,35 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
-      summary: Allows to update a whole node
   /nodes:
+    description: pf::UnifiedApi::Controller::Nodes
     get:
-      description: The list of node will be limited to 100 and a cursor will be returned
-        for iterating on other nodes. Iteration is only needed if the nextCursor is
-        not an empty value.
+      description: List items
+      operationId: api.v1.Nodes.list
       parameters:
       - $ref: '#/components/parameters/cursor'
+      - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/fields'
+      - $ref: '#/components/parameters/sort'
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/NodesList'
-          description: List of nodes
-      summary: Returns a list of nodes
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
     post:
+      description: Create an item
+      operationId: api.v1.Nodes.create
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Node'
-        required: true
       responses:
         '201':
           $ref: '#/components/responses/Created'
@@ -11868,7 +11779,6 @@ paths:
           $ref: '#/components/responses/Duplicate'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
-      summary: Creates a node
   /nodes/search:
     description: pf::UnifiedApi::Controller::Nodes
     post:
@@ -12568,15 +12478,17 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
   /user/{user_id}/password:
     delete:
-      parameters:
-      - $ref: '#/components/parameters/user_id'
+      description: Remove an item
+      operationId: api.v1.Users.Password.remove
+      parameters: []
       responses:
         '204':
-          description: Deleted password entry
-      summary: Allows to delete a password entry for a user
+          description: Item deleted
+    description: pf::UnifiedApi::Controller::Users::Password
     get:
-      parameters:
-      - $ref: '#/components/parameters/user_id'
+      description: Get an item
+      operationId: api.v1.Users.Password.get
+      parameters: []
       responses:
         '200':
           content:
@@ -12584,19 +12496,22 @@ paths:
               schema:
                 properties:
                   item:
-                    $ref: '#/components/schemas/Password'
+                    $ref: '#/components/schemas/users/Password'
                 type: object
-          description: The password entry for a specific user
-      summary: Get the password entry for a user
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
     patch:
-      parameters:
-      - $ref: '#/components/parameters/user_id'
+      description: Update an item
+      operationId: api.v1.Users.Password.update
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Password'
-        required: true
+              $ref: '#/components/schemas/users/Password'
+        required: '1'
       responses:
         '200':
           $ref: '#/components/responses/Message'
@@ -12604,16 +12519,15 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
-      summary: Allows to update parts of a password entry of a user
     post:
-      parameters:
-      - $ref: '#/components/parameters/user_id'
+      description: Create an item
+      operationId: api.v1.Users.Password.create
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Password'
-        required: true
+              $ref: '#/components/schemas/users/Password'
       responses:
         '201':
           $ref: '#/components/responses/Created'
@@ -12623,16 +12537,16 @@ paths:
           $ref: '#/components/responses/Duplicate'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
-      summary: Create a password entry for a user
     put:
-      parameters:
-      - $ref: '#/components/parameters/user_id'
+      description: Replace an item
+      operationId: api.v1.Users.Password.replace
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Password'
-        required: true
+              $ref: '#/components/schemas/users/Password'
+        required: '1'
       responses:
         '200':
           $ref: '#/components/responses/Message'
@@ -12640,7 +12554,6 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
-      summary: Allows to update the whole password entry for a user
   /user/{user_id}/password/search:
     description: pf::UnifiedApi::Controller::Users::Password
     post:

@@ -29,6 +29,7 @@ use pf::SwitchFactory;
 use pf::util;
 use List::MoreUtils qw(any);
 use pf::ConfigStore::SwitchGroup;
+use pf::constants::switch_options;
 
 has 'roles' => ( is => 'rw' );
 
@@ -660,19 +661,7 @@ Extract the descriptions from the various Switch modules.
 =cut
 
 sub options_type {
-    my $self = shift;
-
-    # Sort vendors and switches for display
-    my @modules;
-    foreach my $vendor (sort keys %pf::SwitchFactory::VENDORS) {
-        my $vendors = $pf::SwitchFactory::VENDORS{$vendor};
-        my @switches = map {{ value => $_, label => $vendors->{$_} }} sort keys %$vendors;
-        push @modules, { group => $vendor,
-                         options => \@switches,
-                         value => '' };
-    }
-
-    return ({group => '', options => [{value => '', label => ''}], value => ''}, @modules);
+    return @pf::constants::switch_options::SWITCH_OPTIONS;
 }
 
 =head2 options_groups

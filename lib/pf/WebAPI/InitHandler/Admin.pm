@@ -41,7 +41,6 @@ Preload all the switches
 =cut
 
 sub preloadSwitches {
-    pf::SwitchFactory->preloadAllModules();
 }
 
 =head1 AUTHOR

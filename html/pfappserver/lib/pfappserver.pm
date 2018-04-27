@@ -42,8 +42,6 @@ BEGIN {
 use pf::CHI;
 use pf::CHI::Request;
 use pf::web::util;
-use pf::SwitchFactory;
-pf::SwitchFactory->preloadAllModules();
 
 extends 'Catalyst';
 

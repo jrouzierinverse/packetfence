@@ -401,6 +401,18 @@ sub node_db_prepare {
         WHERE mac = ?
     ]);
 
+    $node_statements->{'node_mac_by_role_sql'} = get_db_handle()->prepare(qq[
+        SELECT mac, nr.name as role FROM node
+            LEFT JOIN node_category as nr on node.category_id = nr.category_id
+        WHERE node.category_id = nr.category_id AND nr.category_id = ? ORDER BY mac LIMIT ?,?
+    ]);
+
+    $node_statements->{'node_mac_list_sql'} = get_db_handle()->prepare(qq[
+        SELECT mac, nr.name as role FROM node
+            LEFT JOIN node_category as nr on node.category_id = nr.category_id
+            ORDER BY mac LIMIT ?,?
+    ]);
+
     $node_db_prepared = 1;
     return 1;
 }
@@ -1538,6 +1550,27 @@ sub check_multihost {
     return @mac;
 }
 
+=item node_mac_by_role
+
+=cut
+
+sub node_mac_by_role {
+    my ($items_per_page, $page, $role_id) = @_;
+    my $offset = $page * $items_per_page;
+    my $query =  db_query_execute(NODE, $node_statements, 'node_mac_by_role_sql', $role_id, $offset, $items_per_page) || return;
+    return $query->fetchall_arrayref({});
+}
+
+=item node_mac_list
+
+=cut
+
+sub node_mac_list {
+    my ($items_per_page, $page) = @_;
+    my $offset = $page * $items_per_page;
+    my $query =  db_query_execute(NODE, $node_statements, 'node_mac_list_sql', $offset, $items_per_page) || return;
+    return $query->fetchall_arrayref({});
+}
 
 =back
 

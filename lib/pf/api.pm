@@ -975,6 +975,89 @@ sub trigger_scan :Public :Fork :AllowedAsAction($ip, mac, $mac, net_type, TYPE) 
     return;
 }
 
+=head2 bounce_node
+
+JSON Request:
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "bounce_node", "params" : ["00:00:00:00:00:00"]  }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [1]  }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef }  }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d '{ "jsonrpc" : "2.0", "id" : 1, "method" : "bounce_node", "params" : ["00:00:00:00:00:00"] }'\
+    http://localhost:9090/
+
+=cut
+
+sub bounce_node : Public {
+    my ($class, $mac) = @_;
+    my $node = pf::node::node_view ($mac);
+    die "Unable to retrieve node '$mac'\n" unless $node;
+    my $switch_id = $node->{'last_switch'};
+    my $switch = pf::SwitchFactory->instantiate($switch_id);
+    die "Unable to find switch '$switch_id' assoicated with node '$mac'\n" unless $switch;
+    return $switch->bouncePort($node->{last_port});
+}
+
+=head2 export_node_by_role
+
+JSON Request:
+
+By role
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "export_node_by_role", "params" : [ "role" , "name", "items_per_page" , 25, "page_number" , 0 ]  }
+
+Any role
+
+  { "jsonrpc" : "2.0", "id" : 1, "method" : "export_node_by_role", "params" : [ "items_per_page" , 25, "page_number" , 0 ]  }
+
+Success Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "result" : [{"items_per_page" : 25, "page_number" : 0, "results" : [{ "mac" : "00:00:00:00:00:01" , "role" : "name"}, ...]}] }
+
+Failure Response:
+
+  { "jsonrpc" : "2.0", "id" : 1, "error" : { "code" : -32000, "message" : "Error message", "data" : undef } }
+
+Curl Example:
+
+    curl -H "Content-Type: application/json-rpc" \
+    -d'{ "jsonrpc" : "2.0", "id" : 1, "method" : "export_node_by_role", "params" : [ "role" , "name", "items_per_page" , 25, "page_number" , 0 ]  }'\
+    http://localhost:9090/
+
+=cut
+
+sub export_node_by_role : Public {
+    my ($self, %args) = @_;
+    my $items_per_page = $args{items_per_page} // 25;
+    my $role = $args{role};
+    my $page = $args{page_number} // 1;
+    my $offset = $page - 1;
+    $offset = 0 if $offset < 0;
+    if (defined $role) {
+        my $role_id = pf::nodecategory::nodecategory_lookup($role);
+        die "Invalid role provided '$role'\n" unless $role_id;
+        return {
+            items_per_page => $items_per_page,
+            page_number => $page,
+            results => pf::node::node_mac_by_role($items_per_page, $offset, $role_id)
+        };
+    }
+    return {
+        items_per_page => $items_per_page,
+        page_number => $page,
+        results => pf::node::node_mac_list($items_per_page, $offset)
+    };
+}
+
 =head2 start_scan
 
 Start a scan for a device

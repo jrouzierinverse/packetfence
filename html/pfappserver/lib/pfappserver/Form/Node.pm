@@ -56,7 +56,7 @@ has_field 'bypass_role_id' =>
   (
    type => 'Select',
    label => 'Bypass Role',
-   options_method => \&get_role_options,
+   options_method => \&get_bypass_role_options,
    element_class => ['chzn-deselect'],
    element_attr => {'data-placeholder' => 'No role'},
   );
@@ -293,6 +293,17 @@ sub get_role_options {
         @roles = map {{value => $_->{category_id}, label => $_->{name}}} @all_roles;
     }
     return ( @roles);
+}
+
+=head2 get_bypass_role_options
+
+Get bypass role options
+
+=cut
+
+sub get_bypass_role_options {
+    my ($self) = @_;
+    return ({value => '', label => ''}, get_role_options($self));
 }
 
 =head2 build_update_subfields

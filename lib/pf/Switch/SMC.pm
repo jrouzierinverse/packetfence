@@ -28,6 +28,15 @@ use pf::Switch::constants;
 use pf::util;
 
 # FIXME: add to admin guide instruction to cut up/down traps and get rid of the 02:00... traps
+#
+# %TRAP_NORMALIZERS
+# A hash of cisco trap normalizers
+# Use the following convention when adding a normalizer
+# <nameOfTrapNotificationType>TrapNormalizer
+#
+our %TRAP_NORMALIZERS = (
+    '.1.3.6.1.4.1.202.20.57.2.1.0.36' => 'secureMacAddrViolationTrapNormalizer',
+);
 
 =head1 SUBROUTINES
 
@@ -62,6 +71,40 @@ sub parseTrap {
         $trapHashRef->{'trapType'} = 'unknown';
     }
     return $trapHashRef;
+}
+
+=head2 secureMacAddrViolationTrapNormalizer
+
+secureMacAddrViolationTrapNormalizer
+
+=cut
+
+sub secureMacAddrViolationTrapNormalizer {
+    my ($self, $trapInfo) = @_;
+    my ($pdu, $variables) = @$trapInfo;
+    my $ifIndex = $self->getIfIndexFromTrap($variables);
+    my $normalized_trap = {
+        trapType => 'secureMacAddrViolation',
+        trapIfIndex => $ifIndex,
+        trapVlan => $self->getVlan( $ifIndex ),
+        trapMac => $self->getMacFromTrapVariablesForOIDBase($variables, '.1.3.6.1.4.1.202.20.57.1.14.2.29.0'),
+    };
+    use Data::Dumper;$self->logger->info('TRAP:' . Dumper([$trapInfo, $normalized_trap]));
+    return $normalized_trap;
+}
+
+=item _findTrapNormalizer
+
+Find the normalizer method for the trap for SMC switches
+
+=cut
+
+sub _findTrapNormalizer {
+    my ($self, $snmpTrapOID, $pdu, $variables) = @_;
+    if (exists $TRAP_NORMALIZERS{$snmpTrapOID}) {
+        return $TRAP_NORMALIZERS{$snmpTrapOID};
+    }
+    return undef;
 }
 
 sub _setVlan {

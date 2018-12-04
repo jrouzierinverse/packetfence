@@ -132,12 +132,16 @@ func (h ApiAAAHandler) handleLogin(w http.ResponseWriter, r *http.Request, p htt
 	auth, token, err := h.authentication.Login(ctx, loginParams.Username, loginParams.Password)
 
 	if auth {
+		cookie := &http.Cookie{Name: "PfToken", Value: token, HttpOnly: false, Path: "/"}
+		http.SetCookie(w, cookie)
 		w.WriteHeader(http.StatusOK)
 		res, _ := json.Marshal(map[string]string{
 			"token": token,
 		})
 		fmt.Fprintf(w, string(res))
 	} else {
+		cookie := &http.Cookie{Name: "PfToken", Value: token, HttpOnly: false, Path: "/", MaxAge : -1, Expires: time.Time{}}
+		http.SetCookie(w, cookie)
 		w.WriteHeader(http.StatusUnauthorized)
 		res, _ := json.Marshal(map[string]string{
 			"message": err.Error(),

@@ -34,6 +34,7 @@ use pf::config qw(
     $HTTPS
     $HTTP
 );
+use Locale::gettext qw(gettext ngettext);
 use pf::constants::config qw($DEFAULT_SMTP_PORT $DEFAULT_SMTP_PORT_SSL $DEFAULT_SMTP_PORT_TLS %ALERTING_PORTS);
 use IO::Socket::SSL qw(SSL_VERIFY_NONE);
 use pf::constants::config qw($TIME_MODIFIER_RE);

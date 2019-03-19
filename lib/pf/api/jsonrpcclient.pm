@@ -109,6 +109,10 @@ Curl transfer timeout in milli seconds
 
 has timeout_ms => (is => 'rw', default => sub {0} ) ;
 
+has cache_curl => (is => 'rw', default => sub { 0 } );
+
+our $CURL;
+
 use constant REQUEST => 0;
 use constant RESPONSE => 2;
 use constant NOTIFICATION => 2;
@@ -207,10 +211,8 @@ sub notify {
 sub curl {
     my ($self,$function) = @_;
     my $url = $self->url;
-    my $curl = WWW::Curl::Easy->new;
+    my $curl = $self->cached_curl_obj;
     $curl->setopt(CURLOPT_HEADER, 0);
-    $curl->setopt(CURLOPT_DNS_USE_GLOBAL_CACHE, 0);
-    $curl->setopt(CURLOPT_NOSIGNAL, 1);
     $curl->setopt(CURLOPT_URL, $url);
     $curl->setopt(CURLOPT_HTTPHEADER, ['Content-Type: application/json-rpc',"Request: $function"]);
     $curl->setopt(CURLOPT_CONNECTTIMEOUT_MS, $self->connect_timeout_ms // 0);
@@ -226,6 +228,37 @@ sub curl {
         $curl->setopt(CURLOPT_SSL_VERIFYHOST, 0);
         $curl->setopt(CURLOPT_SSL_VERIFYPEER, 0);
     }
+
+    return $curl;
+}
+
+=head2 cached_curl_obj
+
+cached_curl_obj
+
+=cut
+
+sub cached_curl_obj {
+    my ($self) = @_;
+    my $curl;
+    if ($self->cache_curl) {
+        $curl = $CURL //= $self->curl_obj;
+    };
+
+    return $curl // $self->curl_obj;
+}
+
+=head2 curl_obj
+
+curl_obj
+
+=cut
+
+sub curl_obj {
+    my ($self) = @_;
+    my $curl = WWW::Curl::Easy->new;
+    $curl->setopt(CURLOPT_DNS_USE_GLOBAL_CACHE, 0);
+    $curl->setopt(CURLOPT_NOSIGNAL, 1);
     return $curl;
 }
 

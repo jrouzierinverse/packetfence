@@ -241,6 +241,7 @@ sub jsonrpcclient {
     return pf::api::jsonrpcclient->new(
         host => $server->{management_ip},
         proto => 'https',
+        cache_curl => 1,
         %{$self->jsonrpc_args // {}},
     );
 }

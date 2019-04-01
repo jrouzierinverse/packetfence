@@ -1,28 +1,35 @@
-package pf::UnifiedApi::Controller::Config::Domains;
+package pfappserver::Form::UnifiedAPI::Config::Domain;
 
 =head1 NAME
 
-pf::UnifiedApi::Controller::Config::Domains -
-
-=cut
+pfappserver::Form::UnifiedAPI::Config::Domain -
 
 =head1 DESCRIPTION
 
-pf::UnifiedApi::Controller::Config::Domains
+pfappserver::Form::UnifiedAPI::Config::Domain
 
 =cut
 
 use strict;
 use warnings;
 
-use Mojo::Base qw(pf::UnifiedApi::Controller::Config);
+use HTML::FormHandler::Moose;
+extends 'pfappserver::Form::Config::Domain';
 
-has 'config_store_class' => 'pf::ConfigStore::Domain';
-has 'form_class' => 'pfappserver::Form::UnifiedAPI::Config::Domain';
-has 'primary_key' => 'domain_id';
+has_field 'dns_servers' => (
+    type     => 'CSV',
+    label    => 'DNS server(s)',
+    required => 1,
+    messages => { required => 'Please specify the DNS server(s)' },
+    tags     => {
+        after_element => \&help,
+        help =>
+'The IP address(es) of the DNS server(s) for this domain. Comma delimited if multiple.'
+    },
 
-use pf::ConfigStore::Domain;
-use pfappserver::Form::UnifiedAPI::Config::Domain;
+);
+
+has_field 'dns_servers.contains' => ( type => 'IPAddress', );
 
 =head1 AUTHOR
 
@@ -52,3 +59,4 @@ USA.
 =cut
 
 1;
+

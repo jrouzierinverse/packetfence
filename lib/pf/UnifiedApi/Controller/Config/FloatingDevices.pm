@@ -24,6 +24,19 @@ has 'primary_key' => 'floating_device_id';
 use pf::ConfigStore::FloatingDevice;
 use pfappserver::Form::Config::FloatingDevice;
  
+=head2 form_parameters
+
+form_parameters
+
+=cut
+
+sub form_parameters {
+    return [
+        active => [qw(tagged_vlans)], 
+        inactive => [qw(taggedVlan)], 
+    ];
+}
+
 =head1 AUTHOR
 
 Inverse inc. <info@inverse.ca>

@@ -63,6 +63,19 @@ has_field 'taggedVlan' =>
              help => 'Comma separated list of VLANs. If the port is a multi-vlan, these are the VLANs that have to be tagged on the port.' },
   );
 
+has_field 'tagged_vlans' => (
+   type => 'CSV',
+   inactive => 1,
+   accessor => 'taggedVlan',
+   label => 'Tagged VLANs',
+   tags => { after_element => \&help,
+             help => 'Comma separated list of VLANs. If the port is a multi-vlan, these are the VLANs that have to be tagged on the port.' },
+);
+
+has_field 'tagged_vlans.contains' => (
+    type => 'Text',
+);
+
 =head2 Methods
 
 =over

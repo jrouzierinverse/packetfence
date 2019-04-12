@@ -932,12 +932,6 @@ const route = {
       }
     },
     {
-      path: 'mse',
-      name: 'mse',
-      component: CiscoMobilityServicesEngineView,
-      props: (route) => ({ storeName: '$_bases', query: route.query.query })
-    },
-    {
       path: 'webservices',
       name: 'webservices',
       component: WebServicesView,

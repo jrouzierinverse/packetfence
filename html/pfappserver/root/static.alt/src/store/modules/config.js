@@ -192,8 +192,6 @@ const state = { // set intitial states to `false` (not `[]` or `{}`) to avoid in
   baseGuestsAdminRegistration: false,
   baseInlineStatus: '',
   baseInline: false,
-  baseMseTabStatus: '',
-  baseMseTab: false,
   baseNetworkStatus: '',
   baseNetwork: false,
   baseNodeImportStatus: '',
@@ -340,9 +338,6 @@ const getters = {
   },
   isLoadingBaseInline: state => {
     return state.baseInlineStatus === types.LOADING
-  },
-  isLoadingBaseMseTab: state => {
-    return state.baseMseTabStatus === types.LOADING
   },
   isLoadingBaseNetwork: state => {
     return state.baseNetworkStatus === types.LOADING

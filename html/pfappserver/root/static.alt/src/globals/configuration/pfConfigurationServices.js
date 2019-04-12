@@ -95,19 +95,6 @@ export const pfConfigurationServiceViewFields = (context = {}) => {
           ]
         },
         {
-          label: i18n.t('httpd.collector'),
-          text: i18n.t(`Should httpd.collector be started? Keep enabled unless you know what you're doing.`),
-          fields: [
-            {
-              key: 'httpd_collector',
-              component: pfFormRangeToggle,
-              attrs: {
-                values: { checked: 'enabled', unchecked: 'disabled' }
-              }
-            }
-          ]
-        },
-        {
           label: i18n.t('httpd.dispatcher'),
           text: i18n.t(`Should httpd.dispatcher be started? Keep enabled unless you know what you're doing.`),
           fields: [

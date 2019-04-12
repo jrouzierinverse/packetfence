@@ -24,8 +24,6 @@ export const pfConfigurationWrixLocationsLogs = [
   'httpd.admin.catalyst',
   'httpd.admin.error',
   'httpd.admin.log',
-  'httpd.collector.error',
-  'httpd.collector.log',
   'httpd.parking.error',
   'httpd.parking.access',
   'httpd.portal.error',

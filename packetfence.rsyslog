@@ -75,11 +75,6 @@ if $syslogtag contains "httpd_admin_access" then -/usr/local/pf/logs/httpd.admin
 if $syslogtag contains "httpd_admin" then -/usr/local/pf/logs/httpd.admin.log
 & stop
 
-if $syslogtag contains "httpd_collector_err" then -/usr/local/pf/logs/httpd.collector.error
-& stop
-if $syslogtag contains "httpd_collector" then -/usr/local/pf/logs/httpd.collector.log
-& stop
-
 if $syslogtag contains "httpd_proxy_err" then -/usr/local/pf/logs/httpd.proxy.error
 & stop
 if $syslogtag contains "httpd_proxy" then -/usr/local/pf/logs/httpd.proxy.access

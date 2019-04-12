@@ -45,14 +45,6 @@ our @SyslogInfo = (
         'conditions' => [ '$syslogtag contains "httpd_admin"' ]
     },
     {
-        'name'       => 'httpd.collector.error',
-        'conditions' => [ '$syslogtag contains "httpd_collector_err"' ]
-    },
-    {
-        'name'       => 'httpd.collector.log',
-        'conditions' => [ '$syslogtag contains "httpd_collector"' ]
-    },
-    {
         'name'       => 'httpd.parking.error',
         'conditions' => [ '$syslogtag contains "httpd_parking_err"' ]
     },

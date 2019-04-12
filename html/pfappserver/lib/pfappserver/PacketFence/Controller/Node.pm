@@ -290,10 +290,6 @@ sub view :Chained('object') :PathPart('read') :Args(0) :AdminRole('NODES_READ') 
     # Form initialization :
     # Retrieve node details and status
     our @tabs = qw(Location SecurityEvents);
-    if (isenabled($Config{mse_tab}{enabled}) && admin_can([$c->user->roles], 'MSE_READ')) {
-        push @tabs, 'MSE';
-    }
-
     push @tabs, 'WMI', 'Option82', 'Rapid7';
 
     ($status, $result) = $c->model('Node')->view($c->stash->{mac});

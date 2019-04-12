@@ -435,11 +435,6 @@ pfperl-api=enabled
 # Should httpd.webservices be started?
 httpd_webservices=enabled
 #
-# services.httpd_collector
-#
-# Should httpd.collector be started?
-httpd_collector=disabled
-#
 # services.httpd_dispatcher
 #
 # Should httpd.dispatcher be started?
@@ -1057,28 +1052,6 @@ place_in_dhcp_parking_group=enabled
 #
 # Show the parking portal to the device instead of the usual portal
 show_parking_portal=enabled
-
-[mse_tab]
-#
-# mse_tab.enabled
-#
-# Enabled MSE tab
-enabled=disabled
-#
-# mse_tab.url
-#
-# URL of MSE server
-url=
-#
-# mse_tab.user
-#
-# Username of MSE server
-user=
-#
-# mse_tab.pass
-#
-# Password of MSE server
-pass=
 
 [radius_configuration]
 #

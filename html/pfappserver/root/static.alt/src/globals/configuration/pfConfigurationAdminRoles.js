@@ -206,12 +206,6 @@ export const pfConfigurationAdminRoleActions = [
     ]
   },
   {
-    group: 'MSE',
-    items: [
-      { text: 'MSE - Read', value: 'MSE_READ' }
-    ]
-  },
-  {
     group: 'Nodes',
     items: [
       { text: 'Nodes - Create', value: 'NODES_CREATE' },

@@ -51,7 +51,6 @@
 /usr/local/pf/conf/httpd.conf.d/ssl-certificates.conf
 /usr/local/pf/conf/httpd.conf.d/httpd.webservices.tt
 /usr/local/pf/conf/httpd.conf.d/httpd.aaa.tt
-/usr/local/pf/conf/httpd.conf.d/httpd.collector.tt
 /usr/local/pf/conf/httpd.conf.d/httpd.portal.tt
 /usr/local/pf/conf/httpd.conf.d/httpd.parking.tt
 /usr/local/pf/conf/httpd.conf.d/httpd.proxy.tt

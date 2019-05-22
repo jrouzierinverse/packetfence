@@ -67,6 +67,7 @@ sub startup {
 #   });
     my $routes = $self->routes;
     $self->setup_api_v1_routes($routes->any("/api/v1")->name("api.v1"));
+    $self->setup_api_v2_routes($routes->any("/api/v2")->name("api.v2"));
     $self->custom_startup_hook();
     $routes->any( '/*', sub {
         my ($c) = @_;
@@ -1740,6 +1741,32 @@ sub setup_api_v1_emails_route {
     $resource_route->register_sub_action({ method => 'POST', action => 'preview', path => 'preview'});
     $resource_route->register_sub_action({ method => 'POST', action => 'send_email', path => 'send'});
     return ;
+}
+
+=head2 setup_api_v2_routes
+
+setup_api_v2_routes
+
+=cut
+
+sub setup_api_v2_routes {
+    my ($self, $root) = @_;
+    my $prefix = $root->name;
+    $self->setup_api_v2_config_routes($root->any("/config")->name("${prefix}.Config"));
+    
+}
+
+=head2 setup_api_v2_config_routes
+
+setup_api_v2_config_routes
+
+=cut
+
+sub setup_api_v2_config_routes {
+    my ($self, $root) = @_;
+    my $prefix = $root->name;
+    my $collection_route = $root->any("/floating_devices")->to(controller => "Config::FloatingDevices")->name("${prefix}.Config.FloatingDevices"); 
+    $collection_route->register_sub_action({path => '', action => "optionsv2", method => 'OPTIONS'});
 }
 
 =head1 AUTHOR

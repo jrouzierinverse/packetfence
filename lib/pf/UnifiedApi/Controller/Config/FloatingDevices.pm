@@ -24,6 +24,58 @@ has 'primary_key' => 'floating_device_id';
 use pf::ConfigStore::FloatingDevice;
 use pfappserver::Form::Config::FloatingDevice;
  
+=head2 optionsv2
+
+optionsv2
+
+=cut
+
+sub optionsv2 {
+    my ($self) = @_;
+    my $false = bless( do{\(my $o = 0)}, 'JSON::PP::Boolean');
+    my $true = bless( do{\(my $o = 1)}, 'JSON::PP::Boolean' );
+    $self->render(
+        json => {
+            fields => [
+                {
+                    name    => "id",
+                    pattern => {
+                        message => "Mac Address",
+                        regex =>
+                          "[0-9A-Fa-f][0-9A-Fa-f](:[0-9A-Fa-f][0-9A-Fa-f]){5}"
+                    },
+                    required => $true,
+                    type     => "string"
+                },
+                {
+                    min_value => 0,
+                    name      => "pvid",
+                    required  => $true,
+                    type      => "integer"
+                },
+                {
+                    name     => "ip",
+                    required => $false,
+                    type     => "string"
+                },
+                {
+                    item => {
+                        type => "string"
+                    },
+                    name     => "taggedVlans",
+                    required => $false,
+                    type     => "array"
+                },
+                {
+                    name     => "trunkPort",
+                    required => $false,
+                    type     => "string"
+                }
+            ],
+        }
+    );
+}
+
 =head1 AUTHOR
 
 Inverse inc. <info@inverse.ca>

@@ -204,6 +204,8 @@ sub identifyType {
         $self->transport("Wired");
     }
 
+    # Consider only the first if eap_type is an array
+    $eap_type = $eap_type->[0] if ref ($eap_type) eq 'ARRAY';
     # Handling EAP connection
     if(defined($eap_type) && ($eap_type ne 0)) {
         $self->isEAP($TRUE);

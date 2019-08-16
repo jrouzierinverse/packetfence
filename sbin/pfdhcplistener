@@ -20,7 +20,7 @@ use File::Basename qw(basename);
 use Getopt::Std;
 use Net::Pcap 0.16;
 use Pod::Usage;
-use POSIX qw(:signal_h pause :sys_wait_h SIG_BLOCK SIG_UNBLOCK);
+use POSIX qw(:signal_h pause :sys_wait_h SIG_BLOCK SIG_UNBLOCK sigsuspend);
 use Fcntl qw(:flock);
 use Systemd::Daemon qw{ -soft };
 
@@ -424,13 +424,11 @@ run all runtasks
 =cut
 
 sub runtasks {
-    my $mask = POSIX::SigSet->new(POSIX::SIGCHLD());
-    sigprocmask(SIG_BLOCK, $mask);
+    my (@args) = @_;
     while (@REGISTERED_TASKS) {
         my $task = shift @REGISTERED_TASKS;
-        runtask($task);
+        runtask($task, @args);
     }
-    sigprocmask(SIG_UNBLOCK, $mask);
 }
 
 =head2 runtask
@@ -440,12 +438,13 @@ creates a new child to run a task
 =cut
 
 sub runtask {
-    my ($task) = @_;
+    my ($task, $mask) = @_;
     my $pid = fork();
     if ($pid) {
         $CHILDREN{$pid} = $task;
     }
     elsif ($pid == 0) {
+        sigprocmask (SIG_UNBLOCK, $mask );
         $SIG{CHLD} = 'DEFAULT';
         $IS_CHILD = 1;
         Log::Log4perl::MDC->put('tid', $$);
@@ -514,11 +513,28 @@ waits for signals
 =cut
 
 sub waitforit {
+    my $mask = POSIX::SigSet->new(
+        POSIX::SIGCHLD(),
+        POSIX::SIGHUP(),
+        POSIX::SIGINT(),
+        POSIX::SIGTERM(),
+        POSIX::SIGALRM(),
+    );
+    my $old_mask = POSIX::SigSet->new();
+    # Block signals
+    # Run the registered tasks
+    # Wait until the signals happen exit or rerun signals
+    sigprocmask(SIG_BLOCK, $mask, $old_mask);
     while ($running) {
-        #  Only pause if their are no registered tasks
-        pause unless @REGISTERED_TASKS;
-        runtasks();
+        eval {
+            runtasks($mask);
+        };
+        if ($@) {
+            $logger->error("Error running tasks: $@");
+        }
+        sigsuspend($old_mask);
     }
+    sigprocmask(SIG_UNBLOCK, $mask);
 }
 
 =head2 alarm_sighandler
@@ -577,7 +593,6 @@ start
 
 sub start {
     registertasks();
-    runtasks();
     waitforit();
 }
 
@@ -600,12 +615,19 @@ signal children and waits for them to exit process
 
 sub kill_and_wait_for_children {
     my ($signal, $waittime) = @_;
+    my $mask = POSIX::SigSet->new(
+        POSIX::SIGCHLD(),
+        POSIX::SIGALRM(),
+    );
+    my $old_mask = POSIX::SigSet->new();
+    sigprocmask(SIG_BLOCK, $mask, $old_mask);
     signal_children($signal);
     $ALARM_RECV = 0;
     alarm $waittime;
     while (((keys %CHILDREN) != 0) && !$ALARM_RECV) {
-        pause;
+        sigsuspend($old_mask);
     }
+    sigprocmask(SIG_UNBLOCK, $mask);
 }
 
 =head2 signal_children
